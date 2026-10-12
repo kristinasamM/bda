@@ -1,0 +1,16 @@
+location_id,location_name,latitude,longitude,state,elevation_m
+mumbai,Mumbai,19.0760,72.8777,Maharashtra,14
+delhi,Delhi,28.6139,77.2090,Delhi,216
+bengaluru,Bengaluru,12.9716,77.5946,Karnataka,920
+chennai,Chennai,13.0827,80.2707,Tamil Nadu,6
+kolkata,Kolkata,22.5726,88.3639,West Bengal,9
+hyderabad,Hyderabad,17.3850,78.4867,Telangana,542
+pune,Pune,18.5204,73.8567,Maharashtra,560
+ahmedabad,Ahmedabad,23.0225,72.5714,Gujarat,53
+jaipur,Jaipur,26.9124,75.7873,Rajasthan,431
+lucknow,Lucknow,26.8467,80.9462,Uttar Pradesh,123
+nagpur,Nagpur,21.1458,79.0882,Maharashtra,310
+bhopal,Bhopal,23.2599,77.4126,Madhya Pradesh,527
+patna,Patna,25.6093,85.1376,Bihar,53
+guwahati,Guwahati,26.1445,91.7362,Assam,55
+thiruvananthapuram,Thiruvananthapuram,8.5241,76.9366,Kerala,10

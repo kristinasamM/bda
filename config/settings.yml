@@ -1,0 +1,55 @@
+app:
+  name: "ClimateWatch"
+  title: "Spatio-Temporal Climate Anomaly Detection and Forecasting Using R"
+  version: "1.0.0"
+
+data:
+  mode: "demo" # "demo" or "real"
+  data_dir: "data"
+  raw_dir: "data/raw"
+  processed_real_dir: "data/processed/real"
+  processed_demo_dir: "data/processed/demo"
+  metadata_dir: "data/metadata"
+
+historical_period:
+  start_year: 2001
+  end_year: 2024
+
+baseline_period:
+  start_year: 2001
+  end_year: 2015
+
+analysis_period:
+  start_year: 2016
+  end_year: 2024
+
+quality:
+  min_monthly_coverage: 0.90
+  min_baseline_years: 5
+  temp_valid_range: [-20.0, 60.0]
+  precip_valid_range: [0.0, 1500.0]
+  humidity_valid_range: [0.0, 100.0]
+  sentinel_values: [-999, -999.0, -99, -99.0]
+
+anomaly:
+  z_mild: 1.5
+  z_moderate: 2.0
+  z_severe: 3.0
+  rainfall_dry_percentile: 0.10
+  rainfall_wet_percentile: 0.90
+  humidity_z_high: 1.5
+  humidity_z_low: -1.5
+
+forecasting:
+  horizons: [3, 6, 12]
+  holdout_months: 12
+  models: ["snaive", "ets", "arima"]
+
+nasa_power:
+  base_url: "https://power.larc.nasa.gov/api/temporal/daily/point"
+  parameters: ["T2M", "PRECTOTCORR", "RH2M"]
+  community: "AG"
+  rate_limit_delay_sec: 1.2
+  max_retries: 3
+  backoff_factor: 2.0
+  request_timeout_sec: 45

@@ -1,0 +1,13 @@
+# R files
+.Rhistory
+.RData
+.Rproj.user/
+.Renviron
+
+# Downloaded cache and raw files
+data/raw/*.json
+data/raw/*.tmp
+
+# OS files
+Thumbs.db
+.DS_Store
