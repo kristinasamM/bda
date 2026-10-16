@@ -15,6 +15,7 @@ options(shiny.maxRequestSize = 2000 * 1024^2)
 shiny::runApp(
   appDir = ".",
   port = port,
-  host = "127.0.0.1",
+  host = "0.0.0.0",
   launch.browser = FALSE
 )
+
