@@ -1,33 +1,78 @@
-# R/dashboard_modules.R - Modular Dashboard Components for ClimateWatch
-
-#' Create Mode Banner HTML
+#' Create Active Dataset Top Banner HTML
 #'
-#' @param is_demo Logical indicating whether demo data is active
+#' Displayed persistently across historical analysis pages to indicate the current dataset.
+#'
+#' @param active_ds Active dataset list or NULL
 #' @return Shiny HTML tag
-render_mode_banner <- function(is_demo = TRUE) {
-  if (is_demo) {
+render_active_dataset_banner <- function(active_ds = NULL) {
+  if (is.null(active_ds)) {
     shiny::div(
-      class = "demo-banner-premium",
+      class = "active-dataset-banner empty",
+      style = "background: linear-gradient(90deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%); border: 1px solid #FCD34D; border-left: 5px solid #F59E0B; border-radius: 10px; padding: 10px 18px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); flex-wrap: wrap; gap: 8px;",
       shiny::div(
-        class = "banner-content-left",
-        shiny::tags$span(class = "status-dot-pulse amber"),
-        shiny::tags$strong("DEMO MODE: "),
-        shiny::tags$span(" Displaying offline synthetic demonstration data with realistic Indian climatology & injected test anomalies (2001–2024).")
+        style = "display: flex; align-items: center; gap: 10px;",
+        shiny::tags$span(style = "color: #D97706; font-size: 1.2rem;", shiny::HTML('⚠️')),
+        shiny::tags$div(
+          shiny::tags$strong(style = "color: #92400E;", "No Active Historical Dataset: "),
+          shiny::tags$span(style = "color: #78350F; font-size: 0.88rem;", "Historical trends, baseline anomalies, and forecasts require an activated weather dataset.")
+        )
       ),
-      shiny::tags$span(class = "badge-pill-amber", "SYNTHETIC DEMO DATA")
+      shiny::actionButton("nav_to_upload_btn", "Upload Historical Data", class = "btn btn-sm btn-primary", style = "font-weight: 600; font-size: 0.82rem; padding: 4px 12px;")
     )
   } else {
+    meta <- active_ds$meta
+    ds_name <- if (!is.null(meta$dataset_name)) meta$dataset_name else active_ds$dataset_id
+    ds_id <- active_ds$dataset_id
+    date_str <- if (!is.null(meta$date_range)) paste(meta$date_range[1], "to", meta$date_range[2]) else "N/A"
+    loc_count <- if (!is.null(meta$locations_count)) meta$locations_count else nrow(active_ds$locations_df)
+    rec_count <- if (!is.null(meta$cleaned_record_count)) format(meta$cleaned_record_count, big.mark = ",") else "N/A"
+
     shiny::div(
-      class = "real-banner-premium",
+      class = "active-dataset-banner active",
+      style = "background: linear-gradient(90deg, #F0FDF4 0%, #DCFCE7 50%, #BBF7D0 100%); border: 1px solid #86EFAC; border-left: 5px solid #16A34A; border-radius: 10px; padding: 10px 18px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); flex-wrap: wrap; gap: 8px;",
       shiny::div(
-        class = "banner-content-left",
-        shiny::tags$span(class = "status-dot-pulse green"),
-        shiny::tags$strong("LIVE PIPELINE: "),
-        shiny::tags$span(" Displaying real historical daily gridded estimates retrieved from the NASA POWER API.")
+        style = "display: flex; align-items: center; gap: 10px;",
+        shiny::tags$span(style = "color: #15803D; font-size: 1.2rem;", shiny::HTML('🌿')),
+        shiny::tags$div(
+          shiny::tags$strong(style = "color: #14532D;", paste0("Active Dataset: ", ds_name)),
+          shiny::tags$span(style = "font-size: 0.82rem; color: #166534; margin-left: 8px;",
+            sprintf("(%s records | %d location%s | %s)", rec_count, loc_count, if (loc_count != 1) "s" else "", date_str)
+          )
+        )
       ),
-      shiny::tags$span(class = "badge-pill-green", "NASA POWER OBSERVATIONS")
+      shiny::div(
+        style = "display: flex; align-items: center; gap: 8px;",
+        shiny::tags$span(class = "badge bg-success", style = "font-size: 0.72rem; letter-spacing: 0.04em;", "ACTIVE PIPELINE"),
+        shiny::actionButton("nav_manage_datasets", "Manage / Switch", class = "btn btn-sm btn-outline-success", style = "font-size: 0.78rem; padding: 3px 10px;")
+      )
     )
   }
+}
+
+#' Create Empty State Placeholder Card HTML
+#'
+#' @param feature_name Name of the feature (e.g. "Climate Overview", "Anomaly Explorer")
+#' @param message Specific guidance message
+#' @return Shiny HTML div
+render_historical_empty_state <- function(feature_name, message = "Please upload an actual historical weather dataset to calculate series and view analyses.") {
+  shiny::div(
+    class = "card p-5 text-center empty-state-card",
+    style = "background: #FFFFFF; border: 1px dashed #CBD5E1; border-radius: 14px; margin: 20px 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);",
+    shiny::div(
+      style = "max-width: 540px; margin: 0 auto;",
+      shiny::tags$div(
+        style = "width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; background: #F0FDF4; border: 2px solid #86EFAC; display: flex; align-items: center; justify-content: center;",
+        shiny::HTML('<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>')
+      ),
+      shiny::tags$h4(style = "font-family: 'Outfit', sans-serif; font-weight: 700; color: #0F172A; margin-bottom: 8px;", paste("Upload Data to View", feature_name)),
+      shiny::p(style = "color: #64748B; font-size: 0.92rem; line-height: 1.5; margin-bottom: 20px;", message),
+      shiny::div(
+        style = "display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;",
+        shiny::actionButton("empty_state_goto_upload", "Go to Data Upload", class = "btn btn-primary px-4", style = "font-weight: 600;"),
+        shiny::actionButton("empty_state_try_sample", "Try Sample Weather Dataset", class = "btn btn-outline-success px-3")
+      )
+    )
+  )
 }
 
 #' Create Premium Metric KPI Card HTML

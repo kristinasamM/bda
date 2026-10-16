@@ -108,6 +108,7 @@ ensure_directories <- function(config = load_config()) {
     config$data$processed_real_dir,
     config$data$processed_demo_dir,
     config$data$metadata_dir,
+    "data/community",
     "R",
     "scripts",
     "tests/testthat",

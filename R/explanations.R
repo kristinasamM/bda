@@ -28,18 +28,18 @@ generate_anomaly_card_data <- function(row, variable = "temperature") {
     # Natural explanation phrasing
     if (a_type %in% c("Insufficient Data", "Insufficient Coverage", "Insufficient Baseline Samples", "Zero Baseline SD")) {
       explanation <- sprintf(
-        "%s %d at %s's selected coordinates has %s; no reliable temperature anomaly score could be determined.",
+        "%s %d at %s has %s; no reliable temperature anomaly score could be determined.",
         m_name, yr, loc, tolower(a_type)
       )
     } else if (sev == "Normal") {
       explanation <- sprintf(
-        "%s %d mean temperature at %s's selected coordinates (%.1f°C) remained within the historical baseline normal range (%.1f°C, deviation %+.1f°C, z-score: %+.2f).",
+        "%s %d mean temperature at %s (%.1f°C) remained within the historical baseline normal range (%.1f°C, deviation %+.1f°C, z-score: %+.2f).",
         m_name, yr, loc, obs, base_ref, dev, z
       )
     } else {
       direction <- if (dev > 0) "above" else "below"
       explanation <- sprintf(
-        "%s %d mean temperature at %s's selected coordinates was %.1f°C %s the historical %s average (baseline: %.1f°C, z-score: %+.2f, severity: %s).",
+        "%s %d mean temperature at %s was %.1f°C %s the historical %s average (baseline: %.1f°C, z-score: %+.2f, severity: %s).",
         m_name, yr, loc, abs(dev), direction, m_name, base_ref, z, tolower(sev)
       )
     }
@@ -80,22 +80,22 @@ generate_anomaly_card_data <- function(row, variable = "temperature") {
 
     if (a_flag %in% c("Insufficient Data", "Insufficient Coverage", "Insufficient Baseline Samples")) {
       explanation <- sprintf(
-        "%s %d at %s's selected coordinates has %s; incomplete monthly rainfall is excluded to avoid distortion.",
+        "%s %d at %s has %s; incomplete monthly rainfall is excluded to avoid distortion.",
         m_name, yr, loc, tolower(a_flag)
       )
     } else if (a_flag == "Unusually Dry") {
       explanation <- sprintf(
-        "%s %d monthly rainfall at %s's selected coordinates (%.1f mm) was below the historical 10th-percentile threshold (%.1f mm; baseline mean: %.1f mm).",
+        "%s %d monthly rainfall at %s (%.1f mm) was below the historical 10th-percentile threshold (%.1f mm; baseline mean: %.1f mm).",
         m_name, yr, loc, obs, p10, base_mean
       )
     } else if (a_flag == "Unusually Wet") {
       explanation <- sprintf(
-        "%s %d monthly rainfall at %s's selected coordinates (%.1f mm) exceeded the historical 90th-percentile threshold (%.1f mm; baseline mean: %.1f mm).",
+        "%s %d monthly rainfall at %s (%.1f mm) exceeded the historical 90th-percentile threshold (%.1f mm; baseline mean: %.1f mm).",
         m_name, yr, loc, obs, p90, base_mean
       )
     } else {
       explanation <- sprintf(
-        "%s %d monthly rainfall at %s's selected coordinates (%.1f mm) fell within historical seasonal bounds (10th pct: %.1f mm, 90th pct: %.1f mm).",
+        "%s %d monthly rainfall at %s (%.1f mm) fell within historical seasonal bounds (10th pct: %.1f mm, 90th pct: %.1f mm).",
         m_name, yr, loc, obs, p10, p90
       )
     }
@@ -134,17 +134,17 @@ generate_anomaly_card_data <- function(row, variable = "temperature") {
 
     if (a_flag %in% c("Insufficient Data", "Insufficient Coverage", "Insufficient Baseline Samples", "Zero Baseline SD")) {
       explanation <- sprintf(
-        "%s %d relative humidity at %s's selected coordinates has %s.",
+        "%s %d relative humidity at %s has %s.",
         m_name, yr, loc, tolower(a_flag)
       )
     } else if (a_flag == "Normal") {
       explanation <- sprintf(
-        "%s %d relative humidity at %s's selected coordinates (%.1f%%) remained within normal historical levels (baseline mean: %.1f%%).",
+        "%s %d relative humidity at %s (%.1f%%) remained within normal historical levels (baseline mean: %.1f%%).",
         m_name, yr, loc, obs, base_ref
       )
     } else {
       explanation <- sprintf(
-        "%s %d relative humidity at %s's selected coordinates (%.1f%%) was %s compared with historical values for this month (baseline mean: %.1f%%, z-score: %+.2f).",
+        "%s %d relative humidity at %s (%.1f%%) was %s compared with historical values for this month (baseline mean: %.1f%%, z-score: %+.2f).",
         m_name, yr, loc, obs, tolower(a_flag), base_ref, z
       )
     }

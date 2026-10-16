@@ -29,9 +29,9 @@ compute_seasonal_baseline <- function(monthly_df,
 
   for (loc in locs) {
     loc_sub <- base_df[base_df$location_id == loc, ]
-    loc_name <- if (nrow(loc_sub) > 0) loc_sub$location_name[1] else loc
-    lat_val <- if (nrow(loc_sub) > 0) loc_sub$latitude[1] else NA
-    lon_val <- if (nrow(loc_sub) > 0) loc_sub$longitude[1] else NA
+    loc_name <- if (nrow(loc_sub) > 0 && "location_name" %in% names(loc_sub) && length(loc_sub$location_name) > 0) loc_sub$location_name[1] else as.character(loc)
+    lat_val <- if (nrow(loc_sub) > 0 && "latitude" %in% names(loc_sub) && length(loc_sub$latitude) > 0) loc_sub$latitude[1] else NA_real_
+    lon_val <- if (nrow(loc_sub) > 0 && "longitude" %in% names(loc_sub) && length(loc_sub$longitude) > 0) loc_sub$longitude[1] else NA_real_
 
     for (m in months) {
       m_sub <- loc_sub[loc_sub$month == m, ]

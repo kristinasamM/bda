@@ -14,6 +14,7 @@ required_packages <- c(
   "jsonlite",
   "yaml",
   "DBI",
+  "RSQLite",
   "duckdb",
   "arrow",
   "forecast",

@@ -8,6 +8,13 @@
 data/raw/*.json
 data/raw/*.tmp
 
-# OS files
+# Uploads runtime directories and storage summaries
+data/uploads/
+data/metadata/storage_summary_*.json
+tests/testthat/data/
+scratch/
+
+# OS and IDE files
 Thumbs.db
 .DS_Store
+.vscode/

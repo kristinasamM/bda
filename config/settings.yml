@@ -53,3 +53,16 @@ nasa_power:
   max_retries: 3
   backoff_factor: 2.0
   request_timeout_sec: 45
+
+community:
+  sqlite_path: "data/community/community.sqlite"
+  live_hot_threshold_c: 40.0
+  live_wet_threshold_mm: 50.0
+  live_wind_threshold_kmh: 50.0
+
+weather_api:
+  default_provider: "open-meteo"
+  base_url: "https://api.open-meteo.com/v1/forecast"
+  alerts_url: "https://alerts.open-meteo.com/v1/forecast"
+  cache_ttl_sec: 900
+  auto_refresh_sec: 1800

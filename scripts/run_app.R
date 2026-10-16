@@ -9,6 +9,9 @@ cat("========================================================\n")
 cat(sprintf("Starting Shiny application on http://127.0.0.1:%d\n", port))
 cat("Press Ctrl+C to stop the application server.\n\n")
 
+# Increase maximum upload file size to 2GB for large meteorological datasets
+options(shiny.maxRequestSize = 2000 * 1024^2)
+
 shiny::runApp(
   appDir = ".",
   port = port,

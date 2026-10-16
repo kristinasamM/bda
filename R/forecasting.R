@@ -1,35 +1,65 @@
-# R/forecasting.R - Temperature Time-Series Forecasting for ClimateWatch
+# R/forecasting.R - Weather Time-Series Forecasting for ClimateWatch
+# Supports Seasonal Naïve, ETS, and ARIMA models using a strict 12-month holdout test set.
+# Preserves the monthly calendar without compressing missing months.
+# Evaluates models on identical holdout timestamps using MAE/RMSE,
+# refits the selected model on the complete series, and produces
+# future forecasts with proper 80% and 95% prediction intervals.
 
-#' Run Chronologically Evaluated Temperature Forecasting
+#' Run Chronologically Evaluated Weather Forecasting
 #'
-#' Compares Seasonal Naïve, ETS, and ARIMA models using a strict 12-month holdout test set.
-#' Evaluates models on identical timestamps, reports actual MAE/RMSE,
-#' refits the best performing model on the complete series, and produces
-#' future point forecasts with 80% and 95% prediction intervals.
-#'
-#' @param monthly_df Monthly data frame for a specific location
+#' @param monthly_df Monthly data frame for the active dataset
 #' @param location_id Selected location ID
+#' @param variable Selected weather measurement ("mean_temperature_c", "total_precipitation_mm", or "mean_humidity_pct")
 #' @param horizon Forecast horizon in months (3, 6, or 12)
 #' @param holdout_months Number of consecutive months reserved for evaluation (default 12)
 #' @return List with diagnostic status, model comparison, holdout predictions, and future forecasts
-forecast_temperature <- function(monthly_df,
-                                 location_id,
-                                 horizon = 6,
-                                 holdout_months = 12) {
+forecast_weather_series <- function(monthly_df,
+                                   location_id,
+                                   variable = "mean_temperature_c",
+                                   horizon = 6,
+                                   holdout_months = 12) {
   # Validate input
   if (is.null(monthly_df) || nrow(monthly_df) == 0) {
     return(list(status = "INSUFFICIENT_DATA", message = "No monthly data available for forecasting."))
   }
 
-  loc_df <- monthly_df[monthly_df$location_id == location_id & monthly_df$is_usable_temp, ]
-  loc_df <- loc_df[!is.na(loc_df$mean_temperature_c), ]
+  # Strictly prevent forecasting identifier codes or invalid columns
+  allowed_vars <- c("mean_temperature_c", "total_precipitation_mm", "mean_humidity_pct")
+  if (!variable %in% allowed_vars) {
+    return(list(status = "INVALID_VARIABLE", message = "Forecasting is only supported for valid weather measurements (Temperature, Precipitation, Humidity). Identifiers and coordinates cannot be forecast."))
+  }
 
-  if (nrow(loc_df) < (holdout_months + 12)) {
+  flag_col <- switch(variable,
+    "mean_temperature_c" = "is_usable_temp",
+    "total_precipitation_mm" = "is_usable_precip",
+    "mean_humidity_pct" = "is_usable_humidity"
+  )
+
+  unit_label <- switch(variable,
+    "mean_temperature_c" = "°C",
+    "total_precipitation_mm" = "mm",
+    "mean_humidity_pct" = "%"
+  )
+
+  var_name_clean <- switch(variable,
+    "mean_temperature_c" = "Mean Temperature",
+    "total_precipitation_mm" = "Total Precipitation",
+    "mean_humidity_pct" = "Relative Humidity"
+  )
+
+  loc_df <- monthly_df[monthly_df$location_id == location_id, ]
+  if (!is.null(flag_col) && flag_col %in% names(loc_df)) {
+    loc_df <- loc_df[loc_df[[flag_col]] == TRUE, ]
+  }
+  loc_df <- loc_df[!is.na(loc_df[[variable]]), ]
+
+  min_required_months <- 24 + holdout_months # At least 36 months (>= 24 training + 12 holdout)
+  if (nrow(loc_df) < min_required_months) {
     return(list(
       status = "INSUFFICIENT_DATA",
       message = sprintf(
-        "Insufficient historical data for %s. Minimum required: %d valid months (at least %d training + %d holdout); available: %d.",
-        location_id, holdout_months + 12, 12, holdout_months, nrow(loc_df)
+        "Insufficient historical data for %s on %s. Minimum required: %d valid months (at least 24 training + %d holdout); available: %d.",
+        location_id, var_name_clean, min_required_months, holdout_months, nrow(loc_df)
       )
     ))
   }
@@ -44,18 +74,17 @@ forecast_temperature <- function(monthly_df,
 
   if (length(expected_dates) != nrow(loc_df)) {
     # If there are gaps, find largest contiguous segment
-    # Match dates to find missing
     date_diffs <- as.numeric(diff(loc_df$year_month))
-    # Approximate monthly difference: 28 to 31 days
+    # Approximate monthly difference: 28 to 32 days
     gap_indices <- which(date_diffs > 32)
     if (length(gap_indices) > 0) {
-      # Use segment after last gap
+      # Use contiguous segment after last gap
       start_idx <- max(gap_indices) + 1
       loc_df <- loc_df[start_idx:nrow(loc_df), ]
-      if (nrow(loc_df) < (holdout_months + 12)) {
+      if (nrow(loc_df) < min_required_months) {
         return(list(
           status = "INSUFFICIENT_DATA",
-          message = "Contiguous valid monthly sequence is too short after handling timeline gaps."
+          message = sprintf("Contiguous valid monthly sequence is too short after handling timeline gaps (need at least %d contiguous months, found %d).", min_required_months, nrow(loc_df))
         ))
       }
     }
@@ -67,8 +96,10 @@ forecast_temperature <- function(monthly_df,
   start_yr <- loc_df$year[1]
   start_mo <- loc_df$month[1]
 
+  series_vals <- loc_df[[variable]]
+
   # Create ts objects
-  full_ts <- stats::ts(loc_df$mean_temperature_c, start = c(start_yr, start_mo), frequency = 12)
+  full_ts <- stats::ts(series_vals, start = c(start_yr, start_mo), frequency = 12)
   train_ts <- stats::window(full_ts, end = stats::time(full_ts)[n_train])
   actual_holdout <- as.numeric(stats::window(full_ts, start = stats::time(full_ts)[n_train + 1]))
   holdout_dates <- loc_df$year_month[(n_train + 1):n_total]
@@ -104,12 +135,23 @@ forecast_temperature <- function(monthly_df,
   # 3. ARIMA
   if (has_forecast) {
     fits$arima <- tryCatch({
-      fit <- forecast::auto.arima(train_ts, seasonal = TRUE, stepwise = TRUE, approximation = FALSE)
+      fit <- forecast::auto.arima(train_ts, seasonal = TRUE, stepwise = TRUE, approximation = TRUE)
       forecast::forecast(fit, h = holdout_months)
     }, error = function(e) NULL)
     preds$arima <- if (!is.null(fits$arima)) as.numeric(fits$arima$mean) else rep(NA_real_, holdout_months)
   } else {
     preds$arima <- preds$snaive
+  }
+
+  # Clamp values for non-negative variables
+  if (variable == "total_precipitation_mm") {
+    preds$snaive <- pmax(0, preds$snaive)
+    preds$ets <- pmax(0, preds$ets)
+    preds$arima <- pmax(0, preds$arima)
+  } else if (variable == "mean_humidity_pct") {
+    preds$snaive <- pmin(100, pmax(0, preds$snaive))
+    preds$ets <- pmin(100, pmax(0, preds$ets))
+    preds$arima <- pmin(100, pmax(0, preds$arima))
   }
 
   # Evaluation metrics on holdout test set
@@ -154,9 +196,7 @@ forecast_temperature <- function(monthly_df,
   best_model_name <- comp_df$Model[best_idx]
   comp_df$Selected <- ifelse(seq_len(nrow(comp_df)) == best_idx, "Yes (Best on Holdout)", "No")
 
-  # -------------------------------------------------------------
-  # REFIT BEST MODEL ON COMPLETE ELIGIBLE DATASET FOR FUTURE FORECAST
-  # -------------------------------------------------------------
+  # Refit best model on complete eligible dataset for future forecast
   future_forecast <- NULL
   if (has_forecast) {
     if (best_model_name == "Seasonal Naïve") {
@@ -168,14 +208,14 @@ forecast_temperature <- function(monthly_df,
       }, error = function(e) NULL)
     } else {
       future_fit <- tryCatch({
-        fit_full <- forecast::auto.arima(full_ts, seasonal = TRUE, stepwise = TRUE)
+        fit_full <- forecast::auto.arima(full_ts, seasonal = TRUE, stepwise = TRUE, approximation = TRUE)
         forecast::forecast(fit_full, h = horizon)
       }, error = function(e) NULL)
     }
     future_forecast <- future_fit
   }
 
-  # Build future dates
+  # Build future target dates
   last_yr <- loc_df$year[n_total]
   last_mo <- loc_df$month[n_total]
   
@@ -198,20 +238,34 @@ forecast_temperature <- function(monthly_df,
     l95 <- as.numeric(future_forecast$lower[, 2])
     u95 <- as.numeric(future_forecast$upper[, 2])
   } else {
-    # Fallback point forecast if package call fails
-    last_12 <- tail(loc_df$mean_temperature_c, 12)
+    last_12 <- tail(series_vals, 12)
     pt_mean <- rep(last_12, length.out = horizon)
-    sd_val <- stats::sd(loc_df$mean_temperature_c)
+    sd_val <- stats::sd(series_vals, na.rm = TRUE)
     l80 <- pt_mean - 1.28 * sd_val
     u80 <- pt_mean + 1.28 * sd_val
     l95 <- pt_mean - 1.96 * sd_val
     u95 <- pt_mean + 1.96 * sd_val
   }
 
+  # Apply non-negative bounding
+  if (variable == "total_precipitation_mm") {
+    pt_mean <- pmax(0, pt_mean)
+    l80 <- pmax(0, l80)
+    u80 <- pmax(0, u80)
+    l95 <- pmax(0, l95)
+    u95 <- pmax(0, u95)
+  } else if (variable == "mean_humidity_pct") {
+    pt_mean <- pmin(100, pmax(0, pt_mean))
+    l80 <- pmin(100, pmax(0, l80))
+    u80 <- pmin(100, pmax(0, u80))
+    l95 <- pmin(100, pmax(0, l95))
+    u95 <- pmin(100, pmax(0, u95))
+  }
+
   future_df <- data.frame(
     date = future_dates,
     month_year = format(future_dates, "%B %Y"),
-    predicted_temp_c = round(pt_mean, 2),
+    predicted_value = round(pt_mean, 2),
     lower_80 = round(l80, 2),
     upper_80 = round(u80, 2),
     lower_95 = round(l95, 2),
@@ -220,7 +274,7 @@ forecast_temperature <- function(monthly_df,
     stringsAsFactors = FALSE
   )
 
-  # Holdout dataframe for actual-vs-predicted chart
+  # Holdout dataframe for actual-vs-predicted validation chart
   holdout_df <- data.frame(
     date = holdout_dates,
     month_year = format(holdout_dates, "%B %Y"),
@@ -239,7 +293,7 @@ forecast_temperature <- function(monthly_df,
   # Historical series dataframe
   hist_df <- data.frame(
     date = loc_df$year_month,
-    temperature_c = loc_df$mean_temperature_c,
+    observed_value = series_vals,
     period = ifelse(loc_df$year_month %in% holdout_dates, "Holdout Test (12m)", "Training History"),
     stringsAsFactors = FALSE
   )
@@ -255,17 +309,41 @@ forecast_temperature <- function(monthly_df,
     holdout_months
   )
 
+  last_observed_date <- loc_df$year_month[n_total]
+  last_observed_str <- format(last_observed_date, "%B %Y")
+  target_dates_str <- sprintf("%s to %s", format(future_dates[1], "%b %Y"), format(future_dates[length(future_dates)], "%b %Y"))
+
   list(
     status = "SUCCESS",
     location_id = location_id,
-    location_name = loc_df$location_name[1],
+    location_name = if ("location_name" %in% names(loc_df)) loc_df$location_name[1] else location_id,
+    variable = variable,
+    variable_label = var_name_clean,
+    unit = unit_label,
     horizon = horizon,
     training_range = training_range_str,
     holdout_range = holdout_range_str,
+    last_observed_month = last_observed_str,
+    target_dates = target_dates_str,
+    provenance_label = sprintf("Forecast generated from uploaded historical data (last observed: %s).", last_observed_str),
     best_model_name = best_model_name,
     comparison_table = comp_df,
     holdout_df = holdout_df,
     future_df = future_df,
     historical_df = hist_df
+  )
+}
+
+#' Wrapper for Backwards Compatibility
+forecast_temperature <- function(monthly_df,
+                                 location_id,
+                                 horizon = 6,
+                                 holdout_months = 12) {
+  forecast_weather_series(
+    monthly_df = monthly_df,
+    location_id = location_id,
+    variable = "mean_temperature_c",
+    horizon = horizon,
+    holdout_months = holdout_months
   )
 }

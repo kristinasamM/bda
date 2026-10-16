@@ -1,16 +1,430 @@
-location_id,location_name,latitude,longitude,state,elevation_m
-mumbai,Mumbai,19.0760,72.8777,Maharashtra,14
-delhi,Delhi,28.6139,77.2090,Delhi,216
-bengaluru,Bengaluru,12.9716,77.5946,Karnataka,920
-chennai,Chennai,13.0827,80.2707,Tamil Nadu,6
-kolkata,Kolkata,22.5726,88.3639,West Bengal,9
-hyderabad,Hyderabad,17.3850,78.4867,Telangana,542
-pune,Pune,18.5204,73.8567,Maharashtra,560
-ahmedabad,Ahmedabad,23.0225,72.5714,Gujarat,53
-jaipur,Jaipur,26.9124,75.7873,Rajasthan,431
-lucknow,Lucknow,26.8467,80.9462,Uttar Pradesh,123
-nagpur,Nagpur,21.1458,79.0882,Maharashtra,310
-bhopal,Bhopal,23.2599,77.4126,Madhya Pradesh,527
-patna,Patna,25.6093,85.1376,Bihar,53
-guwahati,Guwahati,26.1445,91.7362,Assam,55
-thiruvananthapuram,Thiruvananthapuram,8.5241,76.9366,Kerala,10
+"location_id","location_name","latitude","longitude","state","elevation_m"
+"mumbai","Mumbai",19.076,72.8777,"Maharashtra",14
+"delhi","Delhi",28.6139,77.209,"Delhi",216
+"bengaluru","Bengaluru",12.9716,77.5946,"Karnataka",920
+"chennai","Chennai",13.0827,80.2707,"Tamil Nadu",6
+"kolkata","Kolkata",22.5726,88.3639,"West Bengal",9
+"hyderabad","Hyderabad",17.385,78.4867,"Telangana",542
+"pune","Pune",18.5204,73.8567,"Maharashtra",560
+"ahmedabad","Ahmedabad",23.0225,72.5714,"Gujarat",53
+"jaipur","Jaipur",26.9124,75.7873,"Rajasthan",431
+"lucknow","Lucknow",26.8467,80.9462,"Uttar Pradesh",123
+"nagpur","Nagpur",21.1458,79.0882,"Maharashtra",310
+"bhopal","Bhopal",23.2599,77.4126,"Madhya Pradesh",527
+"patna","Patna",25.6093,85.1376,"Bihar",53
+"guwahati","Guwahati",26.1445,91.7362,"Assam",55
+"thiruvananthapuram","Thiruvananthapuram",8.5241,76.9366,"Kerala",10
+"42027","Srinagar",34.0833,74.8333,"Jammu And Kashmir",1585
+"42028","Pahalgam",34.016,75.316,"Jammu And Kashmir",2130
+"42031","Kupwara",34.526,74.254,"Jammu And Kashmir",1609
+"42043","Batote",33.167,75.317,"Jammu And Kashmir",1560
+"42044","Qazigund",33.5833,75.0833,"Jammu And Kashmir",0
+"42045","Banihal",33.5,75.1667,"Jammu And Kashmir",1624
+"42046","Kokernag",33.583,75.3,"Jammu And Kashmir",2000
+"42048","Bhaderwah",32.983,75.717,"Jammu And Kashmir",1613
+"42054","Katra",32.993,74.932,"Bihar",754
+"42056","Jammu",32.6667,74.8333,"Jammu And Kashmir",366
+"42066","Kalpa",31.537,78.256,"Himachal Pradesh",2758
+"42071","Amritsar",31.6333,74.8667,"Punjab",229
+"42076","Kangra A",32.099,76.269,"Himachal Pradesh",733
+"42079","Sundernagar",31.5333,76.9,"Maharashtra",874
+"42081","Bhuntar",31.8333,77.1667,"Himachal Pradesh",0
+"42083","Shimla",31.1,77.1667,"Himachal Pradesh",2205
+"42084","Shimla A",31.104,77.173,"Himachal Pradesh",2205
+"42099","Ludhiana",30.8667,75.9333,"Punjab",255
+"42101","Patiala",30.3333,76.4667,"Punjab",249
+"42103","Ambala",30.3833,76.7667,"Haryana",271
+"42105","Chandigarh",30.7333,76.8833,"Chandigarh",347
+"42111","Dehradun",30.3167,78.0333,"Uttarakhand",683
+"42114","Tehri",30.4,78.4833,"Uttarakhand",0
+"42123","Sriganganagar",29.9167,73.9167,"Rajasthan",176
+"42131","Hisar",29.1667,75.7333,"Haryana",216
+"42137","Karnal",29.7,77.0333,"Haryana",248
+"42139","Meerut",29.0167,77.6333,"Uttar Pradesh",221
+"42141","Jolly Grant A",30.189,78.18,"Uttarakhand",558
+"42147","Mukteshwar",29.4667,79.65,"Uttarakhand",2310
+"42148","Pantnagar",29.0333,79.4667,"Uttarakhand",233
+"42165","Bikaner",28,73.3,"Rajasthan",223
+"42170","Churu",28.25,74.9167,"Rajasthan",290
+"42180","New Delhi Ayanagar",28.472,77.126,"Delhi",265
+"42181","New Delhi Palam",28.5667,77.1167,"Delhi",220
+"42182","New Delhi Safdarjung",28.5833,77.2,"Delhi",211
+"42184","New Delhi Ridge",28.674,77.214,"Delhi",230
+"42189","Bareilly",28.3667,79.4,"Uttar Pradesh",167
+"42217","Tadong",27.319,78.598,"Sikkim",1322
+"42220","Passighat",28.1,95.3833,"Arunachal Pradesh",155
+"42259","Agra Taj",27.175,78.042,"Uttar Pradesh",169
+"42273","Bahraich",27.5667,81.6,"Uttar Pradesh",122
+"42293","Darjeeling Mo",27.036,78.267,"West Bengal",2127
+"42298","Pakyong A",27.228,78.588,"Sikkim",1399
+"42299","Gangtok",27.3333,88.6167,"Sikkim",1756
+"42308","Itanagar",27.084,93.605,"Arunachal Pradesh",320
+"42309","North Lakhimpur",27.2333,94.1167,"Assam",101
+"42314","Mohanbari",27.4833,95.0167,"Rajasthan",110
+"42328","Jaisalmer",26.9,70.9167,"Rajasthan",231
+"42339","Jodhpur",26.3,73.0167,"Rajasthan",217
+"42343","Ajmer",26.45,74.6167,"Rajasthan",485
+"42348","Jaipur",26.8167,75.8,"Rajasthan",385
+"42361","Gwalior",26.2333,78.25,"Madhya Pradesh",205
+"42369","Lucknow",26.75,80.8833,"Uttar Pradesh",122
+"42372","Fursatganj",26.25,81.3667,"Uttar Pradesh",107
+"42377","Sultanpur",26.265,82.072,"Uttar Pradesh",100
+"42379","Gorakhpur",26.75,83.3667,"Uttar Pradesh",76
+"42399","Jalpaiguri",26.5333,88.7167,"West Bengal",0
+"42403","Cooch Behar",26.3333,89.4667,"West Bengal",41
+"42404","Dhubri",26.0167,89.9833,"Assam",0
+"42410","Guwahati",26.1,91.5833,"Assam",47
+"42415","Tezpur",26.6167,92.7833,"Assam",77
+"42423","Jorhat",26.0667,90.1667,"Assam",880
+"42435","Barmer",25.75,71.3833,"Rajasthan",193
+"42452","Kota",25.15,75.85,"Rajasthan",273
+"42463","Jhansi",25.45,78.5833,"Uttar Pradesh",250
+"42474","Prayagraj Allahabad",25.435,81.846,"Uttar Pradesh",98
+"42479","Varanasi Ababatpur",25.45,82.8667,"Uttar Pradesh",81
+"42483","Varanasi",25.3,83.0167,"Uttar Pradesh",88
+"42492","Patna",25.6,85.1,"Bihar",51
+"42498","Bhagalpur",25.2333,86.95,"Bihar",44
+"42500","Purnea",25.2667,87.4667,"Bihar",0
+"42503","Maldah",25.0333,88.1333,"West Bengal",26
+"42512","Barapani",25.7,91.9667,"Meghalaya",893
+"42515","Cherrapunjee",25.25,91.7333,"Meghalaya",1312
+"42516","Shillong",25.5667,91.8833,"Meghalaya",1598
+"42539","Deesa",24.2,72.2,"Gujarat",135
+"42542","Udaipur A Dabok",24.6167,73.8833,"Rajasthan",509
+"42559","Guna",24.65,77.3167,"Madhya Pradesh",477
+"42567","Khajuraho",24.9833,79.9167,"Madhya Pradesh",217
+"42571","Satna",24.5667,80.8333,"Madhya Pradesh",315
+"42587","Daltonganj",24.05,84.0667,"Jharkhand",0
+"42591","Gaya",24.75,84.95,"Bihar",110
+"42618","Kailashahar",24.3167,92,"Tripura",27
+"42619","Silchar",24.75,92.8,"Assam",21
+"42623","Imphal",24.7667,93.9,"Manipur",780
+"42631","Naliya",23.25,68.85,"Gujarat",20
+"42634","Bhuj",23.25,69.6667,"Gujarat",78
+"42647","Ahmedabad",23.0667,72.6333,"Gujarat",55
+"42667","Bhopal Bairagarh",23.2833,77.35,"Madhya Pradesh",523
+"42671","Sagar",23.85,78.75,"West Bengal",550
+"42675","Jabalpur",23.2,79.95,"Madhya Pradesh",391
+"42693","Ambikapur",23.1667,83.25,"Maharashtra",596
+"42701","Ranchi",23.3167,85.3167,"Jharkhand",652
+"42706","Bankura",23.25,87.05,"West Bengal",0
+"42708","Sriniketan",23.65,87.7,"West Bengal",58
+"42712","Asansol",23.688,86.966,"West Bengal",126
+"42724","Agartala",23.8833,91.25,"Tripura",15
+"42726","Lengpui",23.84,92.619,"Mizoram",400
+"42730","Okha",22.4833,69.1167,"Gujarat",5
+"42731","Dwarka",22.3667,69.0833,"Gujarat",10
+"42737","Rajkot",22.3,70.7833,"Gujarat",134
+"42748","Vadodara A",22.3333,73.2667,"Gujarat",37
+"42754","Indore",22.7167,75.8,"Madhya Pradesh",561
+"42763","Hoshangabad",22.7667,77.7667,"Madhya Pradesh",300
+"42768","Chhindwara",22.1,79,"Madhya Pradesh",675
+"42776","Mandla",22.5833,80.3667,"Madhya Pradesh",441
+"42779","Pendra Road",22.7667,81.9,"Chhattisgarh",624
+"42782","Bilaspur",22.079,82.14,"Uttar Pradesh",264
+"42798","Jamshedpur",22.8167,86.1833,"Jharkhand",140
+"42806","Haldia",22.067,88.069,"West Bengal",7
+"42807","Kolkata Alipore",22.5333,88.3333,"West Bengal",5
+"42809","Kolkata Dum Dum",22.65,88.45,"West Bengal",4
+"42811","Diamond Harbour",22.1833,88.2,"West Bengal",4
+"42812","Canning",22.25,88.6667,"West Bengal",3
+"42816","Salt Lake",22.586,88.417,"West Bengal",11
+"42830","Porbandar A",21.65,69.6667,"Gujarat",5
+"42838","Bhavnagar",21.75,72.2,"Gujarat",5
+"42840","Surat",21.2,72.8333,"Gujarat",10
+"42867","Nagpur",21.1,79.05,"Maharashtra",308
+"42871","Gondia",21.4667,80.2,"Maharashtra",311
+"42872","Raipur Mana",21.2333,81.65,"Chhattisgarh",313
+"42874","Raipur",21.2167,81.6667,"Chhattisgarh",294
+"42881","Hirakud",21.524,83.874,"Odisha",160
+"42883","Sambalpur",21.4667,83.9667,"Odisha",0
+"42886","Jharsuguda",21.9167,84.0833,"Odisha",228
+"42891","Keonjhar",21.6167,85.5167,"Odisha",461
+"42895","Balasore",21.5167,86.9333,"Odisha",18
+"42901","Digha",21.8333,87.7833,"West Bengal",0
+"42909","Veraval",20.9,70.3667,"Gujarat",6
+"42921","Nashik",20,73.7833,"Maharashtra",598
+"42933","Akola",20.7,77.0333,"Maharashtra",280
+"42971","Bhubaneswar",20.25,85.8333,"Odisha",45
+"42973","Chandabali",20.7833,86.7333,"Odisha",5
+"42976","Paradeep",20.3,86.6833,"Odisha",4
+"43001","Dahanu",19.9667,72.7167,"Maharashtra",4
+"43003","Mumbai Santacruz",19.1167,72.85,"Maharashtra",8
+"43014","Aurangabad Chikalthana",19.85,75.4,"Maharashtra",582
+"43017","Parbhani",19.2667,76.7667,"Maharashtra",422
+"43041","Jagdalpur",19.0833,82.0333,"Chhattisgarh",552
+"43049","Gopalpur",19.2667,84.8833,"Bihar",16
+"43053","Puri",19.8,85.8167,"Odisha",5
+"43057","Mumbai Colaba",18.9,72.8167,"Maharashtra",10
+"43063","Pune",18.5333,73.85,"Maharashtra",555
+"43067","Pune Pashan",18.536,73.793,"Maharashtra",570
+"43081","Nizamabad",18.6667,78.1,"Uttar Pradesh",379
+"43086","Ramagundam",18.7667,79.4333,"Telangana",156
+"43105","Kalingapatnam",18.3333,84.1333,"Andhra Pradesh",5
+"43109","Harnai",17.8167,73.1,"Maharashtra",17
+"43110","Ratnagiri",16.9833,73.3333,"Maharashtra",75
+"43111","Mahabaleshwar",17.9333,73.6667,"Maharashtra",1384
+"43113","Satara",17.5167,74.05,"Maharashtra",610
+"43117","Solapur",17.6667,75.9,"Maharashtra",477
+"43121","Gulbarga",17.35,76.85,"Karnataka",457
+"43128","Hyderabad",17.45,78.4667,"Telangana",530
+"43147","Tuni",17.35,82.55,"Andhra Pradesh",35
+"43150","Visakhapatnam",17.7,83.3,"Andhra Pradesh",45
+"43157","Kolhapur",16.7,74.2333,"Maharashtra",569
+"43158","Sangli",16.85,74.6,"Maharashtra",545
+"43176","Amaravati",16.513,80.516,"Andhra Pradesh",27
+"43181","Gannavaram",16.5333,80.8,"Andhra Pradesh",21
+"43185","Machilipatnam",16.2,81.15,"Andhra Pradesh",3
+"43187","Narsapur",16.4333,81.7,"Maharashtra",0
+"43189","Kakinada",16.95,82.2333,"Andhra Pradesh",2
+"43192","Panjim",15.4833,73.8167,"Goa",58
+"43196","Mormugao",15.4167,73.7833,"Goa",61
+"43198","Belgaum A",15.85,74.6167,"Karnataka",758
+"43201","Gadag",15.4167,75.6333,"Karnataka",661
+"43213","Kurnool",15.8,78.0667,"Andhra Pradesh",280
+"43220","Bapatla",15.9,80.4667,"Andhra Pradesh",0
+"43221","Ongole",15.5,80.0833,"Andhra Pradesh",22
+"43225","Karwar",14.7833,74.1333,"Karnataka",3
+"43226","Honavar",14.2833,74.45,"Karnataka",8
+"43233","Chitradurga",14.2333,76.4333,"Karnataka",724
+"43237","Anantapur",14.6833,77.6167,"Andhra Pradesh",349
+"43243","Kavali",14.9,79.9833,"Andhra Pradesh",17
+"43245","Nellore",14.45,79.9833,"Andhra Pradesh",19
+"43253","Kannur Ams",11.874,75.37,"Kerala",5
+"43266","Agatti",10.85,72.4667,"Lakshadweep",3
+"43275","Tirupati",13.6667,79.5833,"Andhra Pradesh",110
+"43278","Chennai Nungambakkam",13.0667,80.25,"Tamil Nadu",6
+"43279","Chennai Meenambakkam",13,80.1833,"Tamil Nadu",10
+"43284","Mangalore Bajpea",12.9167,74.8833,"Karnataka",102
+"43285","Mangalore Panambur",12.95,74.8333,"Karnataka",32
+"43293","Bengaluru Kia",13.198,77.706,"Karnataka",915
+"43295","Bengaluru",12.9667,77.5833,"Karnataka",920
+"43296","Bengaluru Hal",12.95,77.6333,"Karnataka",888
+"43303","Vellore",12.9167,79.15,"Tamil Nadu",213
+"43311","Aminidivi",11.1167,72.7333,"Lakshadweep",3
+"43314","Kozhikode",11.25,75.7833,"Kerala",4
+"43315","Kannur",11.8333,75.3333,"Kerala",11
+"43320","Kozhikode A",11.1333,75.95,"Kerala",100
+"43321","Coimbatore A",11.0333,77.05,"Tamil Nadu",396
+"43325","Salem",11.65,78.1667,"Tamil Nadu",279
+"43329","Cuddalore",11.7667,79.7667,"Tamil Nadu",5
+"43331","Puducherry",11.9667,79.8167,"Puducherry",38
+"43333","Port Blair",11.6667,92.7167,"Andaman And Nicobar Islands",73
+"43336","Kochi Cial",10.15,76.4,"Kerala",8
+"43339","Kodaikanal",10.2333,77.4667,"Tamil Nadu",2339
+"43344","Tiruchirapalli A",10.7667,78.7167,"Tamil Nadu",85
+"43346","Karaikal",10.9167,79.8333,"Puducherry",7
+"43347","Nagapattinam",10.7667,79.85,"Tamil Nadu",2
+"43348","Adiramapattinam",10.3333,79.3833,"Tamil Nadu",4
+"43352","Alappuzha",9.55,76.4167,"Kerala",2
+"43360","Madurai A",9.8333,78.0833,"Tamil Nadu",139
+"43361","Tondi",9.7333,79.0333,"Madhya Pradesh",4
+"43363","Pamban",9.2667,79.3,"Tamil Nadu",10
+"43369","Minicoy",8.3,73.15,"Lakshadweep",1
+"43371","Thiruvananthapuram",8.4833,76.95,"Kerala",60
+"43372","Thiruvananthapuram A",8.4667,76.95,"Kerala",4
+"43377","Kanyakumari",8.0833,77.5,"Tamil Nadu",36
+"89514","Maitri",-70.767,11.733,"Maharashtra",117
+"89776","Bharati",-69.407,76.191,"Karnataka",35
+"srinagar","Srinagar",34.0833,74.8333,"Jammu And Kashmir",1585
+"pahalgam","Pahalgam",34.016,75.316,"Jammu And Kashmir",2130
+"kupwara","Kupwara",34.526,74.254,"Jammu And Kashmir",1609
+"batote","Batote",33.167,75.317,"Jammu And Kashmir",1560
+"qazigund","Qazigund",33.5833,75.0833,"Jammu And Kashmir",0
+"banihal","Banihal",33.5,75.1667,"Jammu And Kashmir",1624
+"kokernag","Kokernag",33.583,75.3,"Jammu And Kashmir",2000
+"bhaderwah","Bhaderwah",32.983,75.717,"Jammu And Kashmir",1613
+"katra","Katra",32.993,74.932,"Bihar",754
+"jammu","Jammu",32.6667,74.8333,"Jammu And Kashmir",366
+"kalpa","Kalpa",31.537,78.256,"Himachal Pradesh",2758
+"amritsar","Amritsar",31.6333,74.8667,"Punjab",229
+"kangraa","Kangra A",32.099,76.269,"Himachal Pradesh",733
+"sundernagar","Sundernagar",31.5333,76.9,"Maharashtra",874
+"bhuntar","Bhuntar",31.8333,77.1667,"Himachal Pradesh",0
+"shimla","Shimla",31.1,77.1667,"Himachal Pradesh",2205
+"shimlaa","Shimla A",31.104,77.173,"Himachal Pradesh",2205
+"ludhiana","Ludhiana",30.8667,75.9333,"Punjab",255
+"patiala","Patiala",30.3333,76.4667,"Punjab",249
+"ambala","Ambala",30.3833,76.7667,"Haryana",271
+"chandigarh","Chandigarh",30.7333,76.8833,"Chandigarh",347
+"dehradun","Dehradun",30.3167,78.0333,"Uttarakhand",683
+"tehri","Tehri",30.4,78.4833,"Uttarakhand",0
+"sriganganagar","Sriganganagar",29.9167,73.9167,"Rajasthan",176
+"hisar","Hisar",29.1667,75.7333,"Haryana",216
+"karnal","Karnal",29.7,77.0333,"Haryana",248
+"meerut","Meerut",29.0167,77.6333,"Uttar Pradesh",221
+"jollygranta","Jolly Grant A",30.189,78.18,"Uttarakhand",558
+"mukteshwar","Mukteshwar",29.4667,79.65,"Uttarakhand",2310
+"pantnagar","Pantnagar",29.0333,79.4667,"Uttarakhand",233
+"bikaner","Bikaner",28,73.3,"Rajasthan",223
+"churu","Churu",28.25,74.9167,"Rajasthan",290
+"newdelhiayanagar","New Delhi Ayanagar",28.472,77.126,"Delhi",265
+"newdelhipalam","New Delhi Palam",28.5667,77.1167,"Delhi",220
+"newdelhisafdarjung","New Delhi Safdarjung",28.5833,77.2,"Delhi",211
+"newdelhiridge","New Delhi Ridge",28.674,77.214,"Delhi",230
+"bareilly","Bareilly",28.3667,79.4,"Uttar Pradesh",167
+"tadong","Tadong",27.319,78.598,"Sikkim",1322
+"passighat","Passighat",28.1,95.3833,"Arunachal Pradesh",155
+"agrataj","Agra Taj",27.175,78.042,"Uttar Pradesh",169
+"bahraich","Bahraich",27.5667,81.6,"Uttar Pradesh",122
+"darjeelingmo","Darjeeling Mo",27.036,78.267,"West Bengal",2127
+"pakyonga","Pakyong A",27.228,78.588,"Sikkim",1399
+"gangtok","Gangtok",27.3333,88.6167,"Sikkim",1756
+"itanagar","Itanagar",27.084,93.605,"Arunachal Pradesh",320
+"northlakhimpur","North Lakhimpur",27.2333,94.1167,"Assam",101
+"mohanbari","Mohanbari",27.4833,95.0167,"Rajasthan",110
+"jaisalmer","Jaisalmer",26.9,70.9167,"Rajasthan",231
+"jodhpur","Jodhpur",26.3,73.0167,"Rajasthan",217
+"ajmer","Ajmer",26.45,74.6167,"Rajasthan",485
+"gwalior","Gwalior",26.2333,78.25,"Madhya Pradesh",205
+"fursatganj","Fursatganj",26.25,81.3667,"Uttar Pradesh",107
+"sultanpur","Sultanpur",26.265,82.072,"Uttar Pradesh",100
+"gorakhpur","Gorakhpur",26.75,83.3667,"Uttar Pradesh",76
+"jalpaiguri","Jalpaiguri",26.5333,88.7167,"West Bengal",0
+"coochbehar","Cooch Behar",26.3333,89.4667,"West Bengal",41
+"dhubri","Dhubri",26.0167,89.9833,"Assam",0
+"tezpur","Tezpur",26.6167,92.7833,"Assam",77
+"jorhat","Jorhat",26.0667,90.1667,"Assam",880
+"barmer","Barmer",25.75,71.3833,"Rajasthan",193
+"kota","Kota",25.15,75.85,"Rajasthan",273
+"jhansi","Jhansi",25.45,78.5833,"Uttar Pradesh",250
+"prayagrajallahabad","Prayagraj Allahabad",25.435,81.846,"Uttar Pradesh",98
+"varanasiababatpur","Varanasi Ababatpur",25.45,82.8667,"Uttar Pradesh",81
+"varanasi","Varanasi",25.3,83.0167,"Uttar Pradesh",88
+"bhagalpur","Bhagalpur",25.2333,86.95,"Bihar",44
+"purnea","Purnea",25.2667,87.4667,"Bihar",0
+"maldah","Maldah",25.0333,88.1333,"West Bengal",26
+"barapani","Barapani",25.7,91.9667,"Meghalaya",893
+"cherrapunjee","Cherrapunjee",25.25,91.7333,"Meghalaya",1312
+"shillong","Shillong",25.5667,91.8833,"Meghalaya",1598
+"deesa","Deesa",24.2,72.2,"Gujarat",135
+"udaipuradabok","Udaipur A Dabok",24.6167,73.8833,"Rajasthan",509
+"guna","Guna",24.65,77.3167,"Madhya Pradesh",477
+"khajuraho","Khajuraho",24.9833,79.9167,"Madhya Pradesh",217
+"satna","Satna",24.5667,80.8333,"Madhya Pradesh",315
+"daltonganj","Daltonganj",24.05,84.0667,"Jharkhand",0
+"gaya","Gaya",24.75,84.95,"Bihar",110
+"kailashahar","Kailashahar",24.3167,92,"Tripura",27
+"silchar","Silchar",24.75,92.8,"Assam",21
+"imphal","Imphal",24.7667,93.9,"Manipur",780
+"naliya","Naliya",23.25,68.85,"Gujarat",20
+"bhuj","Bhuj",23.25,69.6667,"Gujarat",78
+"bhopalbairagarh","Bhopal Bairagarh",23.2833,77.35,"Madhya Pradesh",523
+"sagar","Sagar",23.85,78.75,"West Bengal",550
+"jabalpur","Jabalpur",23.2,79.95,"Madhya Pradesh",391
+"ambikapur","Ambikapur",23.1667,83.25,"Maharashtra",596
+"ranchi","Ranchi",23.3167,85.3167,"Jharkhand",652
+"bankura","Bankura",23.25,87.05,"West Bengal",0
+"sriniketan","Sriniketan",23.65,87.7,"West Bengal",58
+"asansol","Asansol",23.688,86.966,"West Bengal",126
+"agartala","Agartala",23.8833,91.25,"Tripura",15
+"lengpui","Lengpui",23.84,92.619,"Mizoram",400
+"okha","Okha",22.4833,69.1167,"Gujarat",5
+"dwarka","Dwarka",22.3667,69.0833,"Gujarat",10
+"rajkot","Rajkot",22.3,70.7833,"Gujarat",134
+"vadodaraa","Vadodara A",22.3333,73.2667,"Gujarat",37
+"indore","Indore",22.7167,75.8,"Madhya Pradesh",561
+"hoshangabad","Hoshangabad",22.7667,77.7667,"Madhya Pradesh",300
+"chhindwara","Chhindwara",22.1,79,"Madhya Pradesh",675
+"mandla","Mandla",22.5833,80.3667,"Madhya Pradesh",441
+"pendraroad","Pendra Road",22.7667,81.9,"Chhattisgarh",624
+"bilaspur","Bilaspur",22.079,82.14,"Uttar Pradesh",264
+"jamshedpur","Jamshedpur",22.8167,86.1833,"Jharkhand",140
+"haldia","Haldia",22.067,88.069,"West Bengal",7
+"kolkataalipore","Kolkata Alipore",22.5333,88.3333,"West Bengal",5
+"kolkatadumdum","Kolkata Dum Dum",22.65,88.45,"West Bengal",4
+"diamondharbour","Diamond Harbour",22.1833,88.2,"West Bengal",4
+"canning","Canning",22.25,88.6667,"West Bengal",3
+"saltlake","Salt Lake",22.586,88.417,"West Bengal",11
+"porbandara","Porbandar A",21.65,69.6667,"Gujarat",5
+"bhavnagar","Bhavnagar",21.75,72.2,"Gujarat",5
+"surat","Surat",21.2,72.8333,"Gujarat",10
+"gondia","Gondia",21.4667,80.2,"Maharashtra",311
+"raipurmana","Raipur Mana",21.2333,81.65,"Chhattisgarh",313
+"raipur","Raipur",21.2167,81.6667,"Chhattisgarh",294
+"hirakud","Hirakud",21.524,83.874,"Odisha",160
+"sambalpur","Sambalpur",21.4667,83.9667,"Odisha",0
+"jharsuguda","Jharsuguda",21.9167,84.0833,"Odisha",228
+"keonjhar","Keonjhar",21.6167,85.5167,"Odisha",461
+"balasore","Balasore",21.5167,86.9333,"Odisha",18
+"digha","Digha",21.8333,87.7833,"West Bengal",0
+"veraval","Veraval",20.9,70.3667,"Gujarat",6
+"nashik","Nashik",20,73.7833,"Maharashtra",598
+"akola","Akola",20.7,77.0333,"Maharashtra",280
+"bhubaneswar","Bhubaneswar",20.25,85.8333,"Odisha",45
+"chandabali","Chandabali",20.7833,86.7333,"Odisha",5
+"paradeep","Paradeep",20.3,86.6833,"Odisha",4
+"dahanu","Dahanu",19.9667,72.7167,"Maharashtra",4
+"mumbaisantacruz","Mumbai Santacruz",19.1167,72.85,"Maharashtra",8
+"aurangabadchikalthana","Aurangabad Chikalthana",19.85,75.4,"Maharashtra",582
+"parbhani","Parbhani",19.2667,76.7667,"Maharashtra",422
+"jagdalpur","Jagdalpur",19.0833,82.0333,"Chhattisgarh",552
+"gopalpur","Gopalpur",19.2667,84.8833,"Bihar",16
+"puri","Puri",19.8,85.8167,"Odisha",5
+"mumbaicolaba","Mumbai Colaba",18.9,72.8167,"Maharashtra",10
+"punepashan","Pune Pashan",18.536,73.793,"Maharashtra",570
+"nizamabad","Nizamabad",18.6667,78.1,"Uttar Pradesh",379
+"ramagundam","Ramagundam",18.7667,79.4333,"Telangana",156
+"kalingapatnam","Kalingapatnam",18.3333,84.1333,"Andhra Pradesh",5
+"harnai","Harnai",17.8167,73.1,"Maharashtra",17
+"ratnagiri","Ratnagiri",16.9833,73.3333,"Maharashtra",75
+"mahabaleshwar","Mahabaleshwar",17.9333,73.6667,"Maharashtra",1384
+"satara","Satara",17.5167,74.05,"Maharashtra",610
+"solapur","Solapur",17.6667,75.9,"Maharashtra",477
+"gulbarga","Gulbarga",17.35,76.85,"Karnataka",457
+"tuni","Tuni",17.35,82.55,"Andhra Pradesh",35
+"visakhapatnam","Visakhapatnam",17.7,83.3,"Andhra Pradesh",45
+"kolhapur","Kolhapur",16.7,74.2333,"Maharashtra",569
+"sangli","Sangli",16.85,74.6,"Maharashtra",545
+"amaravati","Amaravati",16.513,80.516,"Andhra Pradesh",27
+"gannavaram","Gannavaram",16.5333,80.8,"Andhra Pradesh",21
+"machilipatnam","Machilipatnam",16.2,81.15,"Andhra Pradesh",3
+"narsapur","Narsapur",16.4333,81.7,"Maharashtra",0
+"kakinada","Kakinada",16.95,82.2333,"Andhra Pradesh",2
+"panjim","Panjim",15.4833,73.8167,"Goa",58
+"mormugao","Mormugao",15.4167,73.7833,"Goa",61
+"belgauma","Belgaum A",15.85,74.6167,"Karnataka",758
+"gadag","Gadag",15.4167,75.6333,"Karnataka",661
+"kurnool","Kurnool",15.8,78.0667,"Andhra Pradesh",280
+"bapatla","Bapatla",15.9,80.4667,"Andhra Pradesh",0
+"ongole","Ongole",15.5,80.0833,"Andhra Pradesh",22
+"karwar","Karwar",14.7833,74.1333,"Karnataka",3
+"honavar","Honavar",14.2833,74.45,"Karnataka",8
+"chitradurga","Chitradurga",14.2333,76.4333,"Karnataka",724
+"anantapur","Anantapur",14.6833,77.6167,"Andhra Pradesh",349
+"kavali","Kavali",14.9,79.9833,"Andhra Pradesh",17
+"nellore","Nellore",14.45,79.9833,"Andhra Pradesh",19
+"kannurams","Kannur Ams",11.874,75.37,"Kerala",5
+"agatti","Agatti",10.85,72.4667,"Lakshadweep",3
+"tirupati","Tirupati",13.6667,79.5833,"Andhra Pradesh",110
+"chennainungambakkam","Chennai Nungambakkam",13.0667,80.25,"Tamil Nadu",6
+"chennaimeenambakkam","Chennai Meenambakkam",13,80.1833,"Tamil Nadu",10
+"mangalorebajpea","Mangalore Bajpea",12.9167,74.8833,"Karnataka",102
+"mangalorepanambur","Mangalore Panambur",12.95,74.8333,"Karnataka",32
+"bengalurukia","Bengaluru Kia",13.198,77.706,"Karnataka",915
+"bengaluruhal","Bengaluru Hal",12.95,77.6333,"Karnataka",888
+"vellore","Vellore",12.9167,79.15,"Tamil Nadu",213
+"aminidivi","Aminidivi",11.1167,72.7333,"Lakshadweep",3
+"kozhikode","Kozhikode",11.25,75.7833,"Kerala",4
+"kannur","Kannur",11.8333,75.3333,"Kerala",11
+"kozhikodea","Kozhikode A",11.1333,75.95,"Kerala",100
+"coimbatorea","Coimbatore A",11.0333,77.05,"Tamil Nadu",396
+"salem","Salem",11.65,78.1667,"Tamil Nadu",279
+"cuddalore","Cuddalore",11.7667,79.7667,"Tamil Nadu",5
+"puducherry","Puducherry",11.9667,79.8167,"Puducherry",38
+"portblair","Port Blair",11.6667,92.7167,"Andaman And Nicobar Islands",73
+"kochicial","Kochi Cial",10.15,76.4,"Kerala",8
+"kodaikanal","Kodaikanal",10.2333,77.4667,"Tamil Nadu",2339
+"tiruchirapallia","Tiruchirapalli A",10.7667,78.7167,"Tamil Nadu",85
+"karaikal","Karaikal",10.9167,79.8333,"Puducherry",7
+"nagapattinam","Nagapattinam",10.7667,79.85,"Tamil Nadu",2
+"adiramapattinam","Adiramapattinam",10.3333,79.3833,"Tamil Nadu",4
+"alappuzha","Alappuzha",9.55,76.4167,"Kerala",2
+"maduraia","Madurai A",9.8333,78.0833,"Tamil Nadu",139
+"tondi","Tondi",9.7333,79.0333,"Madhya Pradesh",4
+"pamban","Pamban",9.2667,79.3,"Tamil Nadu",10
+"minicoy","Minicoy",8.3,73.15,"Lakshadweep",1
+"thiruvananthapurama","Thiruvananthapuram A",8.4667,76.95,"Kerala",4
+"kanyakumari","Kanyakumari",8.0833,77.5,"Tamil Nadu",36
+"maitri","Maitri",-70.767,11.733,"Maharashtra",117
+"bharati","Bharati",-69.407,76.191,"Karnataka",35

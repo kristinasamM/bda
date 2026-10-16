@@ -1,0 +1,11 @@
+# .Renviron.example - ClimateWatch Environment Variables
+# Copy this file to .Renviron in the project root to configure optional API credentials.
+# Note: Open-Meteo Weather API is used by default and does NOT require an API key.
+
+# Optional: WeatherAPI.com API Key (enables enhanced official alerts and alternative weather data)
+# Obtain a free key at https://www.weatherapi.com
+WEATHERAPI_KEY=your_weatherapi_key_here
+
+# Optional: OpenWeatherMap API Key
+# Obtain a free key at https://openweathermap.org/api
+OPENWEATHER_API_KEY=your_openweather_key_here
