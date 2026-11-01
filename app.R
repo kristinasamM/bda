@@ -30,7 +30,6 @@ source("R/live_weather_dashboard.R")
 source("R/dataset_manager.R")
 source("R/climate_risk_engine.R")
 source("R/anomaly_detective.R")
-source("R/climate_twins.R")
 source("R/relationships.R")
 
 # Initialize environment & active dataset
@@ -144,7 +143,7 @@ server <- function(input, output, session) {
   # Trigger to reload dataset registry
   registry_trigger <- reactiveVal(0)
 
-  # Single Unified Tab State: "summary", "visualizations", "anomalies", "forecast", "correlation", "live", "community", "twins"
+  # Single Unified Tab State: "summary", "visualizations", "anomalies", "forecast", "correlation", "live", "community"
   active_tab_rv <- reactiveVal("summary")
 
   # Legacy compatibility reactive state
@@ -174,8 +173,7 @@ server <- function(input, output, session) {
       forecast = list(title = "Multi-Model Climate Forecasting", sub = "Seasonal Naïve, Exponential Smoothing (ETS), and ARIMA forward projections with prediction intervals."),
       correlation = list(title = "Climate Parameter Relationships", sub = "Pairwise Pearson correlation matrix and bivariate linear regression analysis."),
       live = list(title = "Live Weather & Forecasts", sub = "Real-time conditions and 7-day numerical forecasts from Open-Meteo (operates independently)."),
-      community = list(title = "Community Impact Simulator", sub = "Simulate ground-level civic vulnerabilities: agriculture, health, infrastructure, and water supply."),
-      twins = list(title = "Climate Twin Finder", sub = "Discover monitored locations with matching 12-month seasonal climatological profiles.")
+      community = list(title = "Community Impact Simulator", sub = "Simulate ground-level civic vulnerabilities: agriculture, health, infrastructure, and water supply.")
     )
 
     t_info <- if (!is.null(titles_map[[tab]])) titles_map[[tab]] else list(title = "Climate Analyzer", sub = "Comprehensive meteorological insights")
@@ -204,8 +202,7 @@ server <- function(input, output, session) {
         tags$button(id = "nav_correlation", type = "button", class = paste("cw-tab-pill-btn", if (tab == "correlation") "active" else ""), onclick = "setActiveTab('correlation')", HTML('📊 Correlation')),
         tags$span(class = "cw-nav-divider"),
         tags$button(id = "nav_live", type = "button", class = paste("cw-tab-pill-btn", if (tab == "live") "active" else ""), onclick = "setActiveTab('live')", HTML('🌦️ Live Weather')),
-        tags$button(id = "nav_community", type = "button", class = paste("cw-tab-pill-btn", if (tab == "community") "active" else ""), onclick = "setActiveTab('community')", HTML('👥 Community Impact')),
-        tags$button(id = "nav_twins", type = "button", class = paste("cw-tab-pill-btn", if (tab == "twins") "active" else ""), onclick = "setActiveTab('twins')", HTML('🌐 Climate Twins'))
+        tags$button(id = "nav_community", type = "button", class = paste("cw-tab-pill-btn", if (tab == "community") "active" else ""), onclick = "setActiveTab('community')", HTML('👥 Community Impact'))
       )
     )
   })
@@ -219,10 +216,9 @@ server <- function(input, output, session) {
     session$sendCustomMessage("set_active_tab_pill", tab)
     if (tab == "live") {
       active_workspace_rv("live")
-    } else if (tab %in% c("community", "twins")) {
+    } else if (tab == "community") {
       active_workspace_rv("discover")
-      if (tab == "community") active_discover_subfeature("comm")
-      if (tab == "twins") active_discover_subfeature("twins")
+      active_discover_subfeature("comm")
     } else if (tab == "upload") {
       # Stay on upload screen
     } else {
@@ -875,42 +871,7 @@ server <- function(input, output, session) {
       )
     }
 
-    # 9. CLIMATE TWIN FINDER
-    if (tab == "twins") {
-      yrs <- active_years()
-      return(
-        div(
-          class = "cw-main-card",
-          div(
-            class = "cw-card-header",
-            div(
-              tags$h3(class = "cw-section-heading", "Climate Twin Finder"),
-              tags$div(class = "cw-section-subheading", "Discover monitored locations with matching 12-month seasonal climatological profiles using log1p rainfall scaling and RMSD.")
-            )
-          ),
-          div(
-            class = "row g-3 align-items-end mb-4",
-            div(class = "col-md-4", selectInput("twins_ref_loc", "Reference Location", choices = active_location_choices())),
-            div(class = "col-md-2", numericInput("twins_start_yr", "Start Year", value = max(min(yrs), max(yrs) - 10), min = min(yrs), max = max(yrs))),
-            div(class = "col-md-2", numericInput("twins_end_yr", "End Year", value = max(yrs), min = min(yrs), max = max(yrs))),
-            div(class = "col-md-4", {
-              avail_vars <- character(0)
-              m_curr <- active_monthly_data()
-              if ("mean_temperature_c" %in% names(m_curr) && any(!is.na(m_curr$mean_temperature_c))) avail_vars["Temperature"] <- "mean_temperature_c"
-              if ("total_precipitation_mm" %in% names(m_curr) && any(!is.na(m_curr$total_precipitation_mm))) avail_vars["Precipitation"] <- "total_precipitation_mm"
-              if (length(avail_vars) == 0) avail_vars <- c("Precipitation" = "total_precipitation_mm")
-
-              checkboxGroupInput("twins_vars", "Included Profile Variables",
-                choices = avail_vars,
-                selected = avail_vars,
-                inline = TRUE
-              )
-            })
-          ),
-          uiOutput("twins_results_container")
-        )
-      )
-    }
+    # (Climate Twins feature removed)
   })
 
   # -----------------------------------------------------------------
@@ -1215,15 +1176,17 @@ server <- function(input, output, session) {
 
   output$rel_cor_matrix_table <- renderTable({
     res <- rel_results_rv()
-    if (is.null(res) || res$status != "SUCCESS") return(data.frame(Status = "Insufficient data"))
-    mat <- res$correlation_matrix
-    as.data.frame(mat)
+    if (is.null(res) || res$status != "SUCCESS") return(data.frame(Message = "Insufficient data to compute correlations. Please select a location with more observations."))
+    mat <- res$cor_matrix
+    if (is.null(mat)) return(data.frame(Message = "No correlation data available."))
+    as.data.frame(round(mat, 3))
   }, rownames = TRUE, striped = TRUE, hover = TRUE)
 
   output$rel_n_matrix_table <- renderTable({
     res <- rel_results_rv()
-    if (is.null(res) || res$status != "SUCCESS") return(data.frame(Status = "Insufficient data"))
+    if (is.null(res) || res$status != "SUCCESS") return(data.frame(Message = "Insufficient data."))
     mat <- res$n_matrix
+    if (is.null(mat)) return(data.frame(Message = "No observation count data available."))
     as.data.frame(mat)
   }, rownames = TRUE, striped = TRUE, hover = TRUE)
 
@@ -1730,92 +1693,6 @@ server <- function(input, output, session) {
       ),
       p(style = "font-size: 0.8rem; color: var(--cw-text-secondary); margin-bottom: 4px;", sens$status_description),
       div(style = "font-size: 0.75rem; color: var(--cw-text-muted);", sens$disclaimer)
-    )
-  })
-
-  # -----------------------------------------------------------------
-  # CLIMATE TWIN FINDER SERVER LOGIC
-  # -----------------------------------------------------------------
-  twins_calculated_res <- reactive({
-    req(input$twins_ref_loc, input$twins_start_yr, input$twins_end_yr, input$twins_vars)
-    m_df <- active_monthly_data()
-    if (nrow(m_df) == 0) return(NULL)
-
-    locs <- active_location_choices()
-    profiles <- compute_climatological_profiles(
-      monthly_df = m_df,
-      location_ids = unname(locs),
-      start_year = input$twins_start_yr,
-      end_year = input$twins_end_yr,
-      variables = input$twins_vars
-    )
-
-    calculate_climate_twins(
-      eligible_profiles = profiles$eligible,
-      reference_loc_id = input$twins_ref_loc,
-      variables = input$twins_vars
-    )
-  })
-
-  output$twins_results_container <- renderUI({
-    res <- twins_calculated_res()
-    if (is.null(res) || res$status != "SUCCESS") {
-      msg <- if (!is.null(res$message)) res$message else "Insufficient overlapping historical data across monitored stations."
-      return(div(class = "alert alert-warning", msg))
-    }
-
-    twins <- res$twins
-    if (length(twins) == 0) {
-      return(div(class = "alert alert-info", "No eligible climate twins found for the selected period."))
-    }
-
-    tagList(
-      div(
-        class = "alert alert-success py-2 px-3 mb-3",
-        style = "font-size: 0.85rem;",
-        sprintf("Identified %d closest climate matches for %s across shared period %s (Metric: %s).",
-          length(twins), res$reference_location_name, res$shared_period, res$metric_label
-        )
-      ),
-      fluidRow(
-        lapply(twins, function(twin) {
-          column(4,
-            div(
-              class = "cw-card p-3 h-100",
-              div(style = "display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;",
-                tags$h5(style = "font-family: 'Outfit', sans-serif; font-weight: 700; margin: 0; color: var(--cw-text);",
-                  sprintf("#%d %s", twin$rank, twin$location_name)
-                ),
-                tags$span(class = "cw-badge cw-badge-normal", sprintf("%.0f%% Match", twin$similarity_pct))
-              ),
-              p(style = "font-size: 0.8rem; color: var(--cw-text-secondary); margin-bottom: 8px;",
-                sprintf("RMSD distance: %.3f across %d shared months.", twin$rmsd_score, twin$shared_months)
-              ),
-              tags$details(
-                tags$summary(style = "cursor: pointer; font-size: 0.78rem; font-weight: 600; color: #0284C7;", "View 12-Month Profile Comparison ▾"),
-                div(style = "margin-top: 8px;",
-                  renderPlotly({
-                    ref_m <- twin$reference_profile$precipitation_mm
-                    tw_m <- twin$twin_profile$precipitation_mm
-                    df_comp <- data.frame(
-                      Month = factor(month.abb, levels = month.abb),
-                      Reference = if (!is.null(ref_m)) ref_m else 0,
-                      Twin = if (!is.null(tw_m)) tw_m else 0
-                    )
-                    p <- ggplot(df_comp, aes(x = Month)) +
-                      geom_line(aes(y = Reference, group = 1, color = "Reference"), size = 1) +
-                      geom_line(aes(y = Twin, group = 1, color = "Twin Candidate"), size = 1, linetype = "dashed") +
-                      scale_color_manual(values = c("Reference" = "#0284C7", "Twin Candidate" = "#0D9488")) +
-                      labs(x = "Month", y = "Scaled Index", title = "") +
-                      theme_minimal(base_family = "Plus Jakarta Sans")
-                    style_plotly_chart(p, is_dark = is_dark_mode())
-                  })
-                )
-              )
-            )
-          )
-        })
-      )
     )
   })
 
