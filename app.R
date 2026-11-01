@@ -665,8 +665,12 @@ server <- function(input, output, session) {
             ),
             plotlyOutput("anomalies_plotly_chart", height = "360px"),
             hr(style = "margin: 24px 0; border-color: var(--cw-border);"),
-            tags$h5(class = "cw-card-title mb-2", "Flagged Climate Anomalies"),
-            p(style = "font-size: 0.82rem; color: var(--cw-text-secondary); margin-bottom: 12px;", "Click 'Investigate' on any record to inspect the daily observations in the detective below:"),
+            div(
+              style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;",
+              tags$h5(class = "cw-card-title mb-0", "Flagged Climate Anomalies"),
+              checkboxInput("anom_filter_selected_loc", "Filter table to selected location", value = TRUE)
+            ),
+            p(style = "font-size: 0.82rem; color: var(--cw-text-secondary); margin-bottom: 12px;", "Showing statistical anomalies against historical seasonal baselines. Click 'Investigate' on any record to inspect the daily observations in the detective below:"),
             DTOutput("anomalies_records_table")
           ),
 
@@ -1020,14 +1024,8 @@ server <- function(input, output, session) {
       return(leaflet() %>% addTiles())
     }
 
-    tile_url <- if (is_dark_mode()) {
-      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-    } else {
-      "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-    }
-
     leaflet(valid_coords) %>%
-      addTiles(urlTemplate = tile_url) %>%
+      addTiles() %>%
       addCircleMarkers(
         lng = ~longitude,
         lat = ~latitude,
@@ -1088,8 +1086,21 @@ server <- function(input, output, session) {
     if (nrow(an_df) == 0) return(NULL)
 
     flagged <- an_df[an_df$precip_is_anomaly == TRUE | an_df$temp_is_anomaly == TRUE, ]
+
+    # Filter to selected location by default so it matches user selection
+    if (isTRUE(input$anom_filter_selected_loc) && !is.null(input$anom_loc_select) && nzchar(input$anom_loc_select)) {
+      flagged <- flagged[flagged$location_id == input$anom_loc_select, ]
+    }
+
     if (nrow(flagged) == 0) {
-      return(datatable(data.frame(Status = "No statistical anomalies detected for the selected baseline and analysis periods."), options = list(dom = "t"), rownames = FALSE))
+      locs <- active_locations_df()
+      loc_name <- if (nrow(locs) > 0 && input$anom_loc_select %in% locs$location_id) locs$location_name[locs$location_id == input$anom_loc_select][1] else input$anom_loc_select
+      msg <- if (isTRUE(input$anom_filter_selected_loc)) {
+        sprintf("No statistical anomalies detected for %s in the selected analysis period.", loc_name)
+      } else {
+        "No statistical anomalies detected across stations for the selected period."
+      }
+      return(datatable(data.frame(Status = msg), options = list(dom = "t"), rownames = FALSE))
     }
 
     disp <- data.frame(
@@ -1122,6 +1133,12 @@ server <- function(input, output, session) {
     updateSelectInput(session, "detective_month_select", selected = mo)
     active_tab_rv("anomalies")
     session$sendCustomMessage("scroll_to_detective", list())
+  })
+
+  # Sync detective location with top anomaly location selector
+  observeEvent(input$anom_loc_select, {
+    req(input$anom_loc_select)
+    updateSelectInput(session, "detective_loc_select", selected = input$anom_loc_select)
   })
 
   # -----------------------------------------------------------------

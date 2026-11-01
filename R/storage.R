@@ -97,55 +97,57 @@ load_daily_data_parquet <- function(input_dir, location_ids = NULL, start_year =
     return(data.frame())
   }
 
-  # If arrow is available
-  if (requireNamespace("arrow", quietly = TRUE)) {
-    tryCatch({
-      ds <- arrow::open_dataset(input_dir, format = "parquet")
-      
-      # Build expression
-      res <- ds
-      if (!is.null(location_ids) && length(location_ids) > 0) {
-        res <- dplyr::filter(res, location_id %in% location_ids)
+  parquet_files <- list.files(input_dir, pattern = "\\.parquet$", recursive = TRUE, full.names = TRUE)
+  if (length(parquet_files) > 0) {
+    if (!is.null(start_year) || !is.null(end_year)) {
+      file_years <- as.integer(sub(".*year=(\\d+).*", "\\1", parquet_files))
+      valid_idx <- rep(TRUE, length(parquet_files))
+      if (!is.null(start_year)) valid_idx <- valid_idx & (!is.na(file_years) & file_years >= as.integer(start_year))
+      if (!is.null(end_year)) valid_idx <- valid_idx & (!is.na(file_years) & file_years <= as.integer(end_year))
+      parquet_files <- parquet_files[valid_idx]
+    }
+    
+    if (length(parquet_files) == 0) return(data.frame())
+
+    dfs <- lapply(parquet_files, function(f) {
+      d <- tryCatch(arrow::read_parquet(f), error = function(e) NULL)
+      if (is.null(d) || nrow(d) == 0) return(NULL)
+      if (!("year" %in% names(d))) {
+        y_match <- sub(".*year=(\\d+).*", "\\1", f)
+        if (grepl("^\\d+$", y_match)) d$year <- as.integer(y_match)
       }
-      if (!is.null(start_year)) {
-        res <- dplyr::filter(res, year >= start_year)
+      if (!is.null(location_ids) && length(location_ids) > 0 && "location_id" %in% names(d)) {
+        d <- d[as.character(d$location_id) %in% as.character(location_ids), ]
       }
-      if (!is.null(end_year)) {
-        res <- dplyr::filter(res, year <= end_year)
-      }
-      df <- as.data.frame(dplyr::collect(res))
-      if ("date" %in% names(df)) df$date <- as.Date(df$date)
-      return(df)
-    }, error = function(e) {
-      # Fallback to direct file reading
-      parquet_files <- list.files(input_dir, pattern = "\\.parquet$", recursive = TRUE, full.names = TRUE)
-      if (length(parquet_files) > 0) {
-        dfs <- lapply(parquet_files, arrow::read_parquet)
-        combined <- do.call(rbind, dfs)
-        if ("date" %in% names(combined)) combined$date <- as.Date(combined$date)
-        if (!is.null(location_ids) && length(location_ids) > 0) {
-          combined <- combined[combined$location_id %in% location_ids, ]
-        }
-        if (!is.null(start_year) && "year" %in% names(combined)) {
-          combined <- combined[combined$year >= start_year, ]
-        }
-        if (!is.null(end_year) && "year" %in% names(combined)) {
-          combined <- combined[combined$year <= end_year, ]
-        }
-        return(combined)
-      }
+      d
     })
+    
+    dfs <- dfs[!sapply(dfs, is.null)]
+    if (length(dfs) == 0) return(data.frame())
+
+    combined <- if (requireNamespace("dplyr", quietly = TRUE)) {
+      dplyr::bind_rows(dfs)
+    } else {
+      do.call(rbind, dfs)
+    }
+
+    if ("date" %in% names(combined)) combined$date <- as.Date(combined$date)
+    return(as.data.frame(combined))
   }
 
   # Fallback to RDS files if parquet not present
   rds_files <- list.files(input_dir, pattern = "\\.rds$", recursive = TRUE, full.names = TRUE)
+  rds_files <- grep("locations\\.rds|monthly_aggregates\\.rds", rds_files, value = TRUE, invert = TRUE)
   if (length(rds_files) > 0) {
-    dfs <- lapply(rds_files, readRDS)
-    combined <- do.call(rbind, dfs)
-    if (!is.null(location_ids) && length(location_ids) > 0) {
-      combined <- combined[combined$location_id %in% location_ids, ]
+    dfs <- lapply(rds_files, function(f) tryCatch(readRDS(f), error = function(e) NULL))
+    dfs <- dfs[!sapply(dfs, is.null)]
+    if (length(dfs) == 0) return(data.frame())
+    combined <- dplyr::bind_rows(dfs)
+    if (!is.null(location_ids) && length(location_ids) > 0 && "location_id" %in% names(combined)) {
+      combined <- combined[as.character(combined$location_id) %in% as.character(location_ids), ]
     }
-    return(combined)
+    if ("date" %in% names(combined)) combined$date <- as.Date(combined$date)
+    return(as.data.frame(combined))
   }
 
   data.frame()
