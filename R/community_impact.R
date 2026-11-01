@@ -960,3 +960,138 @@ compare_whatif_scenarios <- function(current_assessment, whatif_assessment) {
     total_changes = length(changed_inputs)
   )
 }
+
+# -------------------------------------------------------------------
+# 3. DIRECT COMMUNITY IMPACT EVALUATION HELPER (for UI Rendering)
+# -------------------------------------------------------------------
+
+#' Comprehensive Community Impact Evaluation Engine
+#' Evaluates ground-level vulnerability across Agriculture, Public Health, Civic Infrastructure, and Water Security
+calc_community_impact <- function(
+  temperature_mean_c = 28.0,
+  temperature_max_c = 32.0,
+  precipitation_total_mm = 100.0,
+  drainage_infra = "Unknown",
+  waterlogging_hist = "Unknown",
+  water_storage = "Unknown",
+  rainfall_dep = "Unknown",
+  outdoor_work = "Unknown",
+  cooling_access = "Unknown",
+  power_reliability = "Unknown"
+) {
+  # Normalize inputs
+  drainage_infra <- if (is.null(drainage_infra) || is.na(drainage_infra)) "Unknown" else drainage_infra
+  waterlogging_hist <- if (is.null(waterlogging_hist) || is.na(waterlogging_hist)) "Unknown" else waterlogging_hist
+  water_storage <- if (is.null(water_storage) || is.na(water_storage)) "Unknown" else water_storage
+  rainfall_dep <- if (is.null(rainfall_dep) || is.na(rainfall_dep)) "Unknown" else rainfall_dep
+  outdoor_work <- if (is.null(outdoor_work) || is.na(outdoor_work)) "Unknown" else outdoor_work
+  cooling_access <- if (is.null(cooling_access) || is.na(cooling_access)) "Unknown" else cooling_access
+  power_reliability <- if (is.null(power_reliability) || is.na(power_reliability)) "Unknown" else power_reliability
+
+  # 1. Agriculture & Crops
+  ag_level <- "Normal / Low Risk"
+  ag_drivers <- c()
+  ag_narrative <- "Agricultural conditions appear relatively stable under projected moisture and thermal levels."
+
+  if (!is.na(precipitation_total_mm) && precipitation_total_mm < 35) {
+    if (rainfall_dep %in% c("High", "Medium", "Unknown")) {
+      ag_level <- "Severe Concern"
+      ag_drivers <- c(ag_drivers, "Severe rainfall deficit (<35mm)", "High crop rainfall dependency")
+      ag_narrative <- "Critical agricultural moisture deficit detected. Rain-fed crops face severe moisture stress and yield degradation without supplementary irrigation."
+    } else {
+      ag_level <- "Moderate Concern"
+      ag_drivers <- c(ag_drivers, "Rainfall deficit (<35mm)")
+      ag_narrative <- "Low seasonal precipitation may require early irrigation deployment to protect crop yields."
+    }
+  } else if (!is.na(precipitation_total_mm) && precipitation_total_mm > 300) {
+    if (waterlogging_hist %in% c("Frequently", "Occasionally", "Unknown") || drainage_infra == "Poor") {
+      ag_level <- "Severe Concern"
+      ag_drivers <- c(ag_drivers, "Intense monthly precipitation (>300mm)", "Field waterlogging vulnerability")
+      ag_narrative <- "Excessive rainfall combined with vulnerable soil drainage elevates root rot and crop submergence risks across low-lying farmlands."
+    } else {
+      ag_level <- "Moderate Concern"
+      ag_drivers <- c(ag_drivers, "Heavy monthly precipitation (>300mm)")
+      ag_narrative <- "Heavy seasonal rainfall observed. Ensure localized field drainage channels remain unblocked to prevent standing water."
+    }
+  } else if (!is.na(temperature_max_c) && temperature_max_c > 38) {
+    ag_level <- "Moderate Concern"
+    ag_drivers <- c(ag_drivers, "High peak temperatures (>38°C)")
+    ag_narrative <- "Elevated thermal stress may induce premature flowering or crop desiccation during reproductive stages."
+  } else {
+    ag_drivers <- c("Balanced rainfall levels", "Favorable temperature range")
+  }
+
+  # 2. Public Health
+  hlth_level <- "Normal / Low Risk"
+  hlth_drivers <- c()
+  hlth_narrative <- "Thermal and atmospheric indicators remain within typical baseline tolerances for civic comfort."
+
+  if (!is.na(temperature_max_c) && (temperature_max_c >= 40 || (temperature_max_c >= 37 && outdoor_work %in% c("High", "Medium", "Unknown")))) {
+    hlth_level <- "Severe Concern"
+    hlth_drivers <- c(hlth_drivers, sprintf("Extreme heat index (max %.1f°C)", temperature_max_c), "High outdoor labor exposure")
+    hlth_narrative <- "Severe heatwave conditions pose acute risks of heat exhaustion and heatstroke, particularly for daily outdoor laborers, transit riders, and elderly residents."
+  } else if (!is.na(temperature_max_c) && (temperature_max_c >= 34 || cooling_access %in% c("Poor", "Limited", "Unknown"))) {
+    hlth_level <- "Moderate Concern"
+    hlth_drivers <- c(hlth_drivers, sprintf("Elevated daytime warmth (%.1f°C)", temperature_max_c), "Limited domestic cooling access")
+    hlth_narrative <- "Warm conditions coupled with restricted cooling facilities may increase nighttime discomfort and fatigue among vulnerable demographic groups."
+  } else if (!is.na(precipitation_total_mm) && precipitation_total_mm > 250) {
+    hlth_level <- "Moderate Concern"
+    hlth_drivers <- c(hlth_drivers, "Persistent dampness/standing water", "Vector-borne disease vectors")
+    hlth_narrative <- "Prolonged surface water accumulation creates favorable breeding habitats for water-borne and mosquito-borne illnesses."
+  } else {
+    hlth_drivers <- c("Comfortable thermal levels", "Low exposure vulnerability")
+  }
+
+  # 3. Civic Infrastructure
+  inf_level <- "Normal / Low Risk"
+  inf_drivers <- c()
+  inf_narrative <- "Municipal transit networks, arterial roadways, and drainage capacities are functioning within normal operational bounds."
+
+  if (!is.na(precipitation_total_mm) && precipitation_total_mm >= 250) {
+    if (drainage_infra %in% c("Poor", "Unknown") || waterlogging_hist %in% c("Frequently", "Occasionally")) {
+      inf_level <- "Severe Concern"
+      inf_drivers <- c(inf_drivers, sprintf("Heavy precipitation (%.0fmm)", precipitation_total_mm), "Inadequate stormwater drainage network")
+      inf_narrative <- "High risk of urban waterlogging, arterial road inundation, and sub-surface stormwater overflow in known vulnerable low-lying transit corridors."
+    } else {
+      inf_level <- "Moderate Concern"
+      inf_drivers <- c(inf_drivers, sprintf("High monthly rainfall (%.0fmm)", precipitation_total_mm))
+      inf_narrative <- "Heavy rainfall will test municipal pump stations and stormwater culverts; precautionary desilting is recommended."
+    }
+  } else if (drainage_infra == "Poor" && !is.na(precipitation_total_mm) && precipitation_total_mm > 100) {
+    inf_level <- "Moderate Concern"
+    inf_drivers <- c(inf_drivers, "Moderate rain over substandard drainage")
+    inf_narrative <- "Localized gutter overflow and slow roadway runoff clearance expected during downpour episodes."
+  } else {
+    inf_drivers <- c("Manageable runoff volume", "Sufficient drain absorption")
+  }
+
+  # 4. Water Security
+  ws_level <- "Normal / Low Risk"
+  ws_drivers <- c()
+  ws_narrative <- "Reservoir recharge, groundwater replenishment, and domestic supply buffers remain secure."
+
+  if (!is.na(precipitation_total_mm) && precipitation_total_mm < 30) {
+    if (water_storage %in% c("None", "Limited", "Unknown") || rainfall_dep %in% c("High", "Medium")) {
+      ws_level <- "Severe Concern"
+      ws_drivers <- c(ws_drivers, sprintf("Severe precipitation deficit (%.0fmm)", precipitation_total_mm), "Limited municipal buffer storage")
+      ws_narrative <- "Subdued seasonal inflow threatens groundwater recharge and surface reservoir levels. Municipal water rationing or tanker dependence may become necessary."
+    } else {
+      ws_level <- "Moderate Concern"
+      ws_drivers <- c(ws_drivers, sprintf("Low precipitation (%.0fmm)", precipitation_total_mm))
+      ws_narrative <- "Low rainfall requires conservative reservoir allocation to bridge upcoming seasonal demands."
+    }
+  } else if (!is.na(precipitation_total_mm) && precipitation_total_mm < 60 && water_storage == "Limited") {
+    ws_level <- "Moderate Concern"
+    ws_drivers <- c(ws_drivers, "Below-average precipitation", "Limited storage buffer")
+    ws_narrative <- "Storage capacity may run low before the next monsoon cycle if consumption rates continue at peak levels."
+  } else {
+    ws_drivers <- c("Adequate seasonal precipitation", "Healthy recharge volume")
+  }
+
+  list(
+    agriculture = list(concern_level = ag_level, narrative = ag_narrative, drivers = ag_drivers),
+    health = list(concern_level = hlth_level, narrative = hlth_narrative, drivers = hlth_drivers),
+    infrastructure = list(concern_level = inf_level, narrative = inf_narrative, drivers = inf_drivers),
+    water_security = list(concern_level = ws_level, narrative = ws_narrative, drivers = ws_drivers)
+  )
+}

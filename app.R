@@ -166,45 +166,46 @@ server <- function(input, output, session) {
     ds <- active_dataset_rv()
     tab <- active_tab_rv()
 
-    if (tab == "live") {
-      div(
-        class = "cw-page-title-section",
-        tags$h1(class = "cw-page-title", "Live Weather & Alerts"),
-        tags$p(class = "cw-page-subtitle", "Real-time conditions and 7-day numerical forecasts from Open-Meteo")
-      )
-    } else if (is.null(ds) || is.null(ds$meta)) {
-      NULL
-    } else {
-      div(
-        class = "cw-page-title-section",
-        tags$h1(class = "cw-page-title", "Analysis Results"),
-        tags$p(class = "cw-page-subtitle", "Comprehensive insights from your climate dataset")
-      )
-    }
+    titles_map <- list(
+      upload = list(title = "Upload & Select Climate Dataset", sub = "Upload your CSV or Excel weather dataset to automatically power all analytics, anomaly detection, and forecasts."),
+      summary = list(title = "Dataset Overview & Summary", sub = "Statistical summary, record completeness, and key parameters from your uploaded data."),
+      visualizations = list(title = "Time Series Trends & Maps", sub = "Historical weather trajectories, 12-calendar-month seasonal profiles, and geocoded station maps."),
+      anomalies = list(title = "Anomaly Detection & Detective", sub = "Z-score and seasonal percentile anomaly detection with deep-dive daily observation investigation."),
+      forecast = list(title = "Multi-Model Climate Forecasting", sub = "Seasonal Naïve, Exponential Smoothing (ETS), and ARIMA forward projections with prediction intervals."),
+      correlation = list(title = "Climate Parameter Relationships", sub = "Pairwise Pearson correlation matrix and bivariate linear regression analysis."),
+      live = list(title = "Live Weather & Forecasts", sub = "Real-time conditions and 7-day numerical forecasts from Open-Meteo (operates independently)."),
+      community = list(title = "Community Impact Simulator", sub = "Simulate ground-level civic vulnerabilities: agriculture, health, infrastructure, and water supply."),
+      twins = list(title = "Climate Twin Finder", sub = "Discover monitored locations with matching 12-month seasonal climatological profiles.")
+    )
+
+    t_info <- if (!is.null(titles_map[[tab]])) titles_map[[tab]] else list(title = "Climate Analyzer", sub = "Comprehensive meteorological insights")
+
+    div(
+      class = "cw-page-title-section",
+      tags$h1(class = "cw-page-title", t_info$title),
+      tags$p(class = "cw-page-subtitle", t_info$sub)
+    )
   })
 
-  # Floating rounded segmented pill tab bar (hidden on Welcome/Upload screen)
+  # Floating rounded segmented pill tab bar (Always accessible so users can switch anytime)
   output$page_floating_nav_ui <- renderUI({
-    ds <- active_dataset_rv()
     tab <- active_tab_rv()
-
-    if ((is.null(ds) || is.null(ds$meta)) && tab != "live") {
-      return(NULL)
-    }
 
     div(
       class = "cw-floating-nav",
       div(
         class = "cw-segmented-bar",
-        tags$button(id = "nav_summary", class = paste("cw-tab-pill-btn", if (tab == "summary") "active" else ""), onclick = "setActiveTab('summary')", HTML('📋 Summary')),
-        tags$button(id = "nav_visualizations", class = paste("cw-tab-pill-btn", if (tab == "visualizations") "active" else ""), onclick = "setActiveTab('visualizations')", HTML('📈 Visualizations')),
-        tags$button(id = "nav_anomalies", class = paste("cw-tab-pill-btn", if (tab == "anomalies") "active" else ""), onclick = "setActiveTab('anomalies')", HTML('🚨 Anomalies')),
-        tags$button(id = "nav_forecast", class = paste("cw-tab-pill-btn", if (tab == "forecast") "active" else ""), onclick = "setActiveTab('forecast')", HTML('🔮 Forecast')),
-        tags$button(id = "nav_correlation", class = paste("cw-tab-pill-btn", if (tab == "correlation") "active" else ""), onclick = "setActiveTab('correlation')", HTML('📊 Correlation')),
+        tags$button(id = "nav_upload", type = "button", class = paste("cw-tab-pill-btn", if (tab == "upload") "active" else ""), onclick = "setActiveTab('upload')", HTML('📁 Upload Data')),
         tags$span(class = "cw-nav-divider"),
-        tags$button(id = "nav_live", class = paste("cw-tab-pill-btn", if (tab == "live") "active" else ""), onclick = "setActiveTab('live')", HTML('🌦️ Live Weather')),
-        tags$button(id = "nav_community", class = paste("cw-tab-pill-btn", if (tab == "community") "active" else ""), onclick = "setActiveTab('community')", HTML('👥 Community Impact')),
-        tags$button(id = "nav_twins", class = paste("cw-tab-pill-btn", if (tab == "twins") "active" else ""), onclick = "setActiveTab('twins')", HTML('🌐 Climate Twins'))
+        tags$button(id = "nav_summary", type = "button", class = paste("cw-tab-pill-btn", if (tab == "summary") "active" else ""), onclick = "setActiveTab('summary')", HTML('📋 Summary')),
+        tags$button(id = "nav_visualizations", type = "button", class = paste("cw-tab-pill-btn", if (tab == "visualizations") "active" else ""), onclick = "setActiveTab('visualizations')", HTML('📈 Visualizations')),
+        tags$button(id = "nav_anomalies", type = "button", class = paste("cw-tab-pill-btn", if (tab == "anomalies") "active" else ""), onclick = "setActiveTab('anomalies')", HTML('🚨 Anomalies')),
+        tags$button(id = "nav_forecast", type = "button", class = paste("cw-tab-pill-btn", if (tab == "forecast") "active" else ""), onclick = "setActiveTab('forecast')", HTML('🔮 Forecast')),
+        tags$button(id = "nav_correlation", type = "button", class = paste("cw-tab-pill-btn", if (tab == "correlation") "active" else ""), onclick = "setActiveTab('correlation')", HTML('📊 Correlation')),
+        tags$span(class = "cw-nav-divider"),
+        tags$button(id = "nav_live", type = "button", class = paste("cw-tab-pill-btn", if (tab == "live") "active" else ""), onclick = "setActiveTab('live')", HTML('🌦️ Live Weather')),
+        tags$button(id = "nav_community", type = "button", class = paste("cw-tab-pill-btn", if (tab == "community") "active" else ""), onclick = "setActiveTab('community')", HTML('👥 Community Impact')),
+        tags$button(id = "nav_twins", type = "button", class = paste("cw-tab-pill-btn", if (tab == "twins") "active" else ""), onclick = "setActiveTab('twins')", HTML('🌐 Climate Twins'))
       )
     )
   })
@@ -215,12 +216,15 @@ server <- function(input, output, session) {
     req(raw_tab)
     tab <- sub("_\\d+$", "", raw_tab)
     active_tab_rv(tab)
+    session$sendCustomMessage("set_active_tab_pill", tab)
     if (tab == "live") {
       active_workspace_rv("live")
     } else if (tab %in% c("community", "twins")) {
       active_workspace_rv("discover")
       if (tab == "community") active_discover_subfeature("comm")
       if (tab == "twins") active_discover_subfeature("twins")
+    } else if (tab == "upload") {
+      # Stay on upload screen
     } else {
       active_workspace_rv("analyze")
       if (tab == "summary") active_analyze_tab("summary")
@@ -236,9 +240,20 @@ server <- function(input, output, session) {
     session$sendCustomMessage("set_active_tab_pill", "live")
   })
   observeEvent(input$change_dataset_btn, {
-    active_dataset_rv(NULL)
+    active_tab_rv("upload")
+    session$sendCustomMessage("set_active_tab_pill", "upload")
+  })
+  observeEvent(input$header_upload_btn, {
+    active_tab_rv("upload")
+    session$sendCustomMessage("set_active_tab_pill", "upload")
+  })
+  observeEvent(input$view_active_data_btn, {
     active_tab_rv("summary")
     session$sendCustomMessage("set_active_tab_pill", "summary")
+  })
+  observeEvent(input$prompt_go_upload_btn, {
+    active_tab_rv("upload")
+    session$sendCustomMessage("set_active_tab_pill", "upload")
   })
 
   # Header dataset indicator
@@ -248,12 +263,12 @@ server <- function(input, output, session) {
       div(
         class = "cw-dataset-badge",
         tags$span(class = "cw-dataset-dot"),
-        tags$span(style = "max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;", ds$meta$dataset_name),
+        tags$span(style = "max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;", ds$meta$dataset_name),
         tags$span(style = "color: var(--cw-text-secondary); font-size: 0.75rem;", sprintf("(%s rows)", format(ds$meta$cleaned_record_count, big.mark = ","))),
-        actionButton("change_dataset_btn", "Change", class = "cw-btn-change-ds")
+        actionButton("header_upload_btn", "📁 Upload / Switch", class = "cw-btn-change-ds")
       )
     } else {
-      NULL
+      actionButton("header_upload_btn", "📁 Upload Dataset", class = "cw-btn-change-ds")
     }
   })
 
@@ -321,7 +336,115 @@ server <- function(input, output, session) {
     tab <- active_tab_rv()
     ds <- active_dataset_rv()
 
-    # 1. LIVE WEATHER (Requires no uploaded historical data)
+    # 1. UPLOAD & DATASET SELECTION SCREEN
+    if (tab == "upload") {
+      return(
+        div(
+          class = "cw-welcome-container",
+          div(
+            class = "cw-welcome-icon",
+            HTML('<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>')
+          ),
+          tags$h2(class = "cw-welcome-heading", "Spatio-Temporal ", tags$span("Climate Analyzer")),
+          tags$p(class = "cw-welcome-desc", "Upload your climate data — once uploaded, all features (Summary, Visualizations, Anomalies, Forecast, Correlation, Community Impact, Twins) will run on your dataset!"),
+
+          # Currently Active Dataset Notification (if loaded)
+          if (!is.null(ds) && !is.null(ds$meta)) {
+            div(
+              style = "background: rgba(16, 185, 129, 0.08); border: 1.5px solid #10B981; border-radius: var(--cw-radius-md); padding: 14px 20px; max-width: 640px; margin: 0 auto 24px auto; text-align: left;",
+              div(style = "display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;",
+                div(
+                  tags$strong(style = "color: #059669; font-size: 0.95rem;", "🟢 Currently Active Dataset: "),
+                  tags$span(style = "font-weight: 700; color: var(--cw-text);", ds$meta$dataset_name),
+                  tags$div(style = "font-size: 0.8rem; color: var(--cw-text-secondary); margin-top: 3px;",
+                    sprintf("%s records • %d monitored locations • %d years (%s to %s)",
+                      format(ds$meta$cleaned_record_count, big.mark = ","),
+                      ds$meta$locations_count,
+                      ds$meta$years_count,
+                      ds$meta$date_range[1], ds$meta$date_range[2]
+                    )
+                  )
+                ),
+                tags$button(
+                  class = "btn btn-sm btn-cw-primary",
+                  onclick = "setActiveTab('summary')",
+                  "View Analytics →"
+                )
+              )
+            )
+          },
+
+          # Upload Dropzone Box
+          div(
+            class = "cw-upload-box",
+            div(class = "cw-upload-icon-circle", HTML('<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>')),
+            tags$h3(style = "font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 6px; color: var(--cw-text);", "Upload Climate Dataset"),
+            p(style = "font-size: 0.9rem; color: var(--cw-text-secondary); margin-bottom: 12px;", "Supported formats: CSV, XLSX (Up to 2GB)"),
+            p(style = "font-size: 0.82rem; color: var(--cw-text-muted); margin-bottom: 18px; max-width: 480px; margin-left: auto; margin-right: auto;",
+              "Auto-detects Date, Location, Temperature, Rainfall, and Humidity. Indian meteorological station coordinates are matched automatically."
+            ),
+            div(
+              style = "max-width: 380px; margin: 0 auto 16px auto;",
+              fileInput("upload_file_input", NULL,
+                accept = c(".csv", ".xlsx", ".xls", ".parquet", ".pq", "text/csv"),
+                buttonLabel = "Browse Files",
+                placeholder = "Choose CSV or Excel...",
+                width = "100%"
+              )
+            ),
+            div(
+              style = "margin-top: 10px;",
+              actionButton(
+                "analyze_my_data_btn",
+                "🚀 Analyze My Data & Run All Features",
+                class = "btn btn-cw-primary",
+                style = "font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.05rem; padding: 12px 38px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);"
+              )
+            ),
+            uiOutput("upload_inspection_card_ui")
+          ),
+
+          div(
+            style = "margin-bottom: 24px;",
+            tags$button(
+              class = "btn btn-cw-outline",
+              onclick = "setActiveTab('live')",
+              HTML('<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2"/></svg>Explore Live Weather Independently')
+            )
+          ),
+
+          # 1-Click Fast Presets
+          tags$h5(style = "font-family: 'Outfit'; font-weight: 700; margin-bottom: 14px; color: var(--cw-text);", "Or Explore With Ready-To-Use Datasets:"),
+          div(
+            class = "cw-preset-grid",
+            div(
+              class = "cw-preset-card",
+              div(
+                div(style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;",
+                  tags$strong(style = "font-family: 'Outfit', sans-serif; color: #0284C7;", "🌧️ CDSP Rainfall Dataset"),
+                  tags$span(class = "cw-badge cw-badge-normal", "132,288 Records")
+                ),
+                p(style = "font-size: 0.82rem; color: var(--cw-text-secondary); margin-bottom: 12px;", "Official IMD historical monthly rainfall across 212 Indian weather stations (1969–2020) with complete coordinate mapping.")
+              ),
+              actionButton("quick_load_cdsp_btn", "1-Click Load CDSP Rainfall", class = "btn btn-cw-primary btn-sm w-100")
+            ),
+            div(
+              class = "cw-preset-card",
+              div(
+                div(style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;",
+                  tags$strong(style = "font-family: 'Outfit', sans-serif; color: #0D9488;", "☀️ NASA POWER Daily Weather"),
+                  tags$span(class = "cw-badge cw-badge-info", "Daily Obs")
+                ),
+                p(style = "font-size: 0.82rem; color: var(--cw-text-secondary); margin-bottom: 12px;", "Daily observations for Mumbai & Delhi (2018–2024), including temperature, precipitation, and relative humidity.")
+              ),
+              actionButton("try_sample_csv_btn", "1-Click Load Daily Sample", class = "btn btn-cw-outline btn-sm w-100")
+            )
+          )
+        )
+      )
+    }
+
+    # 2. LIVE WEATHER (Requires no uploaded historical data)
     if (tab == "live") {
       return(
         div(
@@ -379,79 +502,21 @@ server <- function(input, output, session) {
       )
     }
 
-    # 2. WELCOME / UPLOAD SCREEN (When no dataset is active)
+    # 3. GUARD CHECK FOR ALL ANALYTICAL TABS: If no dataset is active, prompt cleanly
     if (is.null(ds) || is.null(ds$meta)) {
       return(
         div(
-          class = "cw-welcome-container",
-          div(
-            class = "cw-welcome-icon",
-            HTML('<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>')
+          class = "cw-main-card text-center py-5",
+          tags$div(style = "font-size: 2.6rem; margin-bottom: 12px;", "📁"),
+          tags$h3(style = "font-family: 'Outfit'; font-weight: 700; color: var(--cw-text);", "No Climate Dataset Active"),
+          tags$p(style = "color: var(--cw-text-secondary); max-width: 480px; margin: 0 auto 20px auto; font-size: 0.95rem;",
+            "To view these analytical results, please upload your CSV or Excel file, or load one of the 1-click sample datasets."
           ),
-          tags$h2(class = "cw-welcome-heading", "Spatio-Temporal ", tags$span("Climate Analyzer")),
-          tags$p(class = "cw-welcome-desc", "Upload climate data and uncover insights — detect anomalies, visualize trends, and forecast the future."),
-
-          # Upload Dropzone Box (Matches media_1792166469581.png)
-          div(
-            class = "cw-upload-box",
-            div(class = "cw-upload-icon-circle", HTML('<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>')),
-            tags$h3(style = "font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 6px; color: var(--cw-text);", "Upload Climate Data"),
-            p(style = "font-size: 0.9rem; color: var(--cw-text-secondary); margin-bottom: 20px;", "Supported formats: CSV, XLSX"),
-            div(
-              style = "max-width: 360px; margin: 0 auto 16px auto;",
-              fileInput("upload_file_input", NULL,
-                accept = c(".csv", ".xlsx", ".xls", ".parquet", ".pq", "text/csv"),
-                buttonLabel = "Browse Files",
-                placeholder = "No file chosen",
-                width = "100%"
-              )
-            ),
-            div(
-              style = "margin-top: 10px;",
-              actionButton(
-                "analyze_my_data_btn",
-                "Analyze My Data",
-                class = "btn btn-cw-primary",
-                style = "font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.05rem; padding: 12px 38px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);"
-              )
-            ),
-            uiOutput("upload_inspection_card_ui")
-          ),
-
-          div(
-            style = "margin-bottom: 24px;",
-            actionButton(
-              "welcome_live_btn",
-              HTML('<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2"/></svg>Explore Live Weather Independently'),
-              class = "btn btn-cw-outline"
-            )
-          ),
-
-          # 1-Click Fast Presets
-          div(
-            class = "cw-preset-grid",
-            div(
-              class = "cw-preset-card",
-              div(
-                div(style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;",
-                  tags$strong(style = "font-family: 'Outfit', sans-serif; color: #0284C7;", "🌧️ CDSP Rainfall Dataset"),
-                  tags$span(class = "cw-badge cw-badge-normal", "132,288 Records")
-                ),
-                p(style = "font-size: 0.82rem; color: var(--cw-text-secondary); margin-bottom: 12px;", "Official IMD historical monthly rainfall across 212 Indian weather stations (1969–2020) with complete coordinate mapping.")
-              ),
-              actionButton("quick_load_cdsp_btn", "1-Click Load CDSP Rainfall", class = "btn btn-cw-primary btn-sm w-100")
-            ),
-            div(
-              class = "cw-preset-card",
-              div(
-                div(style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;",
-                  tags$strong(style = "font-family: 'Outfit', sans-serif; color: #0D9488;", "☀️ NASA POWER Daily Weather"),
-                  tags$span(class = "cw-badge cw-badge-info", "Daily Obs")
-                ),
-                p(style = "font-size: 0.82rem; color: var(--cw-text-secondary); margin-bottom: 12px;", "Daily observations for Mumbai & Delhi (2018–2024), including temperature, precipitation, and relative humidity.")
-              ),
-              actionButton("try_sample_csv_btn", "1-Click Load Daily Sample", class = "btn btn-cw-outline btn-sm w-100")
-            )
+          tags$button(
+            class = "btn btn-cw-primary btn-lg",
+            style = "border-radius: 9999px; padding: 10px 28px; font-weight: 700;",
+            onclick = "setActiveTab('upload')",
+            "📁 Go to Upload Dataset"
           )
         )
       )
@@ -873,6 +938,9 @@ server <- function(input, output, session) {
     h_df <- if ("mean_humidity_pct" %in% names(m_df)) calc_stats(m_df$mean_humidity_pct, "Relative Humidity (%)") else NULL
 
     combined <- rbind(t_df, p_df, h_df)
+    if (is.null(combined) || nrow(combined) == 0) {
+      combined <- data.frame(Variable = "No numerical climate variables available", Mean = "-", Median = "-", `Std Dev` = "-", Min = "-", Max = "-", check.names = FALSE)
+    }
     datatable(combined, options = list(dom = "t", paging = FALSE), rownames = FALSE)
   })
 
@@ -900,6 +968,7 @@ server <- function(input, output, session) {
         theme_minimal(base_family = "Plus Jakarta Sans")
     } else {
       loc_sub <- m_df[m_df$location_id == input$trends_loc_select, ]
+      if (nrow(loc_sub) == 0) return(NULL)
       loc_sub <- loc_sub[order(loc_sub$year_month), ]
       
       if (var_col == "total_precipitation_mm") {
@@ -1019,7 +1088,9 @@ server <- function(input, output, session) {
     if (nrow(an_df) == 0) return(NULL)
 
     flagged <- an_df[an_df$precip_is_anomaly == TRUE | an_df$temp_is_anomaly == TRUE, ]
-    if (nrow(flagged) == 0) return(NULL)
+    if (nrow(flagged) == 0) {
+      return(datatable(data.frame(Status = "No statistical anomalies detected for the selected baseline and analysis periods."), options = list(dom = "t"), rownames = FALSE))
+    }
 
     disp <- data.frame(
       Location = flagged$location_name,
