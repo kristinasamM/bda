@@ -755,3 +755,267 @@ table.dataTable tbody tr:hover td {
   border-radius: var(--cw-radius-md) !important;
   border: 1px solid var(--cw-border) !important;
 }
+
+
+/* ==========================================================================
+   Bottom-Right Weather Widget FAB & Clean Popup Card
+   ========================================================================== */
+
+/* Floating Action Button (FAB) at Bottom-Right */
+.cw-weather-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  z-index: 1050;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.38);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  overflow: visible;
+}
+
+.cw-weather-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 28px rgba(2, 132, 199, 0.5);
+}
+
+.cw-weather-fab:active {
+  transform: scale(0.95);
+}
+
+.cw-weather-fab img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Subtle live pulse ring around the button */
+.cw-weather-fab-ping {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  bottom: -4px;
+  left: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--cw-primary);
+  opacity: 0.7;
+  animation: cw-ping 2.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes cw-ping {
+  0% { transform: scale(0.96); opacity: 0.8; }
+  70%, 100% { transform: scale(1.35); opacity: 0; }
+}
+
+/* Weather Floating Popup Card */
+.cw-weather-popup-card {
+  position: fixed;
+  bottom: 96px;
+  right: 24px;
+  width: 350px;
+  max-width: calc(100vw - 48px);
+  background: var(--cw-card-bg);
+  color: var(--cw-text);
+  border: 1px solid var(--cw-border);
+  border-radius: var(--cw-radius-xl);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2);
+  z-index: 1045;
+  overflow: hidden;
+  animation: cw-popup-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cw-popup-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.cw-weather-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 12px 18px;
+  border-bottom: 1px solid var(--cw-border-subtle);
+  background: var(--cw-card-bg);
+}
+
+.cw-weather-popup-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--cw-text);
+}
+
+.cw-weather-popup-close {
+  background: transparent;
+  border: none;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--cw-text-secondary);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cw-weather-popup-close:hover {
+  background: var(--cw-border-subtle);
+  color: var(--cw-text);
+}
+
+.cw-weather-popup-body {
+  padding: 16px 18px 14px 18px;
+}
+
+.cw-weather-popup-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.cw-weather-popup-temp-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.cw-weather-popup-temp {
+  font-size: 2.4rem;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  line-height: 1;
+  color: var(--cw-text);
+  letter-spacing: -1px;
+}
+
+.cw-weather-popup-condition {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--cw-text-secondary);
+  margin-top: 4px;
+}
+
+.cw-weather-popup-icon {
+  font-size: 3.2rem;
+  line-height: 1;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.12));
+}
+
+.cw-weather-popup-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: var(--cw-bg);
+  border: 1px solid var(--cw-border-subtle);
+  border-radius: var(--cw-radius-md);
+  padding: 10px;
+  margin-bottom: 14px;
+}
+
+.cw-weather-metric-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.cw-weather-metric-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--cw-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 2px;
+}
+
+.cw-weather-metric-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--cw-text);
+}
+
+.cw-weather-city-select-box {
+  margin-top: 10px;
+}
+
+.cw-weather-city-select-box label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--cw-text-secondary);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.cw-weather-city-select-box .form-group {
+  margin-bottom: 0 !important;
+}
+
+.cw-weather-city-select-box .selectize-input {
+  border-radius: var(--cw-radius-md) !important;
+  font-size: 0.85rem !important;
+  border-color: var(--cw-border) !important;
+  background-color: var(--cw-card-bg) !important;
+  color: var(--cw-text) !important;
+}
+
+.cw-weather-popup-footer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--cw-border-subtle);
+  background: var(--cw-card-bg);
+}
+
+.cw-weather-btn-explore {
+  flex: 1;
+  background: var(--cw-primary) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: var(--cw-radius-md) !important;
+  padding: 9px 12px !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+  transition: background 0.15s ease !important;
+  text-align: center;
+}
+
+.cw-weather-btn-explore:hover {
+  background: var(--cw-primary-hover) !important;
+  color: #ffffff !important;
+}
+
+.cw-weather-btn-close {
+  background: var(--cw-bg) !important;
+  color: var(--cw-text-secondary) !important;
+  border: 1px solid var(--cw-border) !important;
+  border-radius: var(--cw-radius-md) !important;
+  padding: 9px 14px !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: all 0.15s ease !important;
+}
+
+.cw-weather-btn-close:hover {
+  background: var(--cw-border-subtle) !important;
+  color: var(--cw-text) !important;
+}
