@@ -2,9 +2,12 @@
 
 ## Quick Start (Run Immediately)
 1. **Launch Application Server**:
-   ```powershell
-   Rscript scripts/run_app.R 3838
-   ```
+   open:
+   C:\Program Files\R\R-4.6.1\bin\x64\
+   
+   run:
+   shiny::runApp("D:/Engineering/Code/Project/bda", port = 3838, launch.browser = TRUE)
+
 2. **Open Dashboard**:
    Navigate in your browser to:
    `http://127.0.0.1:3838`

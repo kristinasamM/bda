@@ -56,6 +56,38 @@ style_plotly_chart <- function(p, is_dark = FALSE) {
     )
 }
 
+# Weather Widget Helpers
+get_weather_emoji <- function(code) {
+  if (is.null(code) || is.na(code)) return('\u26C5')
+  code <- suppressWarnings(as.integer(code))
+  if (is.na(code)) return('\u26C5')
+  if (code == 0) return('\u2600\uFE0F')
+  if (code %in% c(1, 2)) return('\U0001F324\uFE0F')
+  if (code == 3) return('\u2601\uFE0F')
+  if (code %in% c(45, 48)) return('\U0001F32B\uFE0F')
+  if (code %in% c(51, 53, 55, 56, 57)) return('\U0001F326\uFE0F')
+  if (code %in% c(61, 63, 65, 66, 67, 80, 81, 82)) return('\U0001F327\uFE0F')
+  if (code %in% c(71, 73, 75, 77, 85, 86)) return('\u2744\uFE0F')
+  if (code %in% c(95, 96, 99)) return('\u26C8\uFE0F')
+  '\u26C5'
+}
+get_nearest_location_info <- function(lat, lon, locs_df = std_locations_df) {
+  if (is.null(locs_df) || nrow(locs_df) == 0) {
+    return(list(name = "Your Location", id = "mumbai", lat = 19.0760, lon = 72.8777))
+  }
+  dists <- (locs_df$latitude - lat)^2 + (locs_df$longitude - lon)^2
+  min_idx <- which.min(dists)
+  if (length(min_idx) > 0 && !is.na(min_idx)) {
+    return(list(
+      name = locs_df$location_name[min_idx],
+      id = locs_df$location_id[min_idx],
+      lat = locs_df$latitude[min_idx],
+      lon = locs_df$longitude[min_idx]
+    ))
+  }
+  list(name = "Your Location", id = "mumbai", lat = lat, lon = lon)
+}
+
 # -------------------------------------------------------------------
 # USER INTERFACE
 # -------------------------------------------------------------------
@@ -87,6 +119,37 @@ ui <- tagList(
         setTimeout(function() {
           location.reload();
         }, 1000);
+      });
+
+      function requestUserGeolocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            function(pos) {
+              Shiny.setInputValue('client_geo_coords', {
+                lat: pos.coords.latitude,
+                lon: pos.coords.longitude,
+                status: 'success',
+                ts: Date.now()
+              }, {priority: 'event'});
+            },
+            function(err) {
+              Shiny.setInputValue('client_geo_coords', {
+                status: 'error',
+                code: err.code,
+                ts: Date.now()
+              }, {priority: 'event'});
+            },
+            { timeout: 8000, maximumAge: 300000 }
+          );
+        } else {
+          Shiny.setInputValue('client_geo_coords', {
+            status: 'unsupported',
+            ts: Date.now()
+          }, {priority: 'event'});
+        }
+      }
+      $(document).ready(function() {
+        setTimeout(requestUserGeolocation, 600);
       });
     "))
   ),
@@ -124,6 +187,17 @@ ui <- tagList(
     uiOutput("page_hero_header_ui"),
     uiOutput("page_floating_nav_ui"),
     uiOutput("main_workspace_content_ui")
+  ),
+
+  # Bottom-Right Weather Widget FAB & Clean Popup Card
+  uiOutput("weather_widget_popup_ui"),
+  tags$button(
+    id = "weather_fab_btn",
+    class = "cw-weather-fab",
+    onclick = "Shiny.setInputValue('weather_fab_click', Math.random(), {priority: 'event'});",
+    title = "Current Live Weather & Climate",
+    tags$div(class = "cw-weather-fab-ping"),
+    tags$img(src = "weather-widget-icon.png", alt = "Live Weather")
   )
 )
 
@@ -310,12 +384,12 @@ server <- function(input, output, session) {
     ds <- active_dataset_rv()
     choices <- character(0)
     if (!is.null(ds) && !is.null(ds$meta) && !is.null(ds$meta$variables)) {
-      if (isTRUE(ds$meta$variables$temperature)) choices["Mean Temperature (°C)"] <- "mean_temperature_c"
+      if (isTRUE(ds$meta$variables$temperature)) choices["Mean Temperature (&deg;C)"] <- "mean_temperature_c"
       if (isTRUE(ds$meta$variables$precipitation)) choices["Total Rainfall (mm)"] <- "total_precipitation_mm"
       if (isTRUE(ds$meta$variables$humidity)) choices["Relative Humidity (%)"] <- "mean_humidity_pct"
     } else {
       m_df <- active_monthly_data()
-      if ("mean_temperature_c" %in% names(m_df) && any(!is.na(m_df$mean_temperature_c))) choices["Mean Temperature (°C)"] <- "mean_temperature_c"
+      if ("mean_temperature_c" %in% names(m_df) && any(!is.na(m_df$mean_temperature_c))) choices["Mean Temperature (&deg;C)"] <- "mean_temperature_c"
       if ("total_precipitation_mm" %in% names(m_df) && any(!is.na(m_df$total_precipitation_mm))) choices["Total Rainfall (mm)"] <- "total_precipitation_mm"
       if ("mean_humidity_pct" %in% names(m_df) && any(!is.na(m_df$mean_humidity_pct))) choices["Relative Humidity (%)"] <- "mean_humidity_pct"
     }
@@ -413,6 +487,18 @@ server <- function(input, output, session) {
           tags$h5(style = "font-family: 'Outfit'; font-weight: 700; margin-bottom: 14px; color: var(--cw-text);", "Or Explore With Ready-To-Use Datasets:"),
           div(
             class = "cw-preset-grid",
+            div(
+              class = "cw-preset-card",
+              style = "border: 2px solid var(--cw-primary); background: var(--cw-primary-soft);",
+              div(
+                div(style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;",
+                  tags$strong(style = "font-family: 'Outfit', sans-serif; color: #0284C7; font-size: 0.95rem;", "⚡ Real-Time Indian Climate API"),
+                  tags$span(class = "cw-badge cw-badge-normal", "Live Stream")
+                ),
+                p(style = "font-size: 0.82rem; color: var(--cw-text-secondary); margin-bottom: 12px;", "Fetches real-time observations directly from Open-Meteo API across top Indian cities (Mumbai, Delhi, Bengaluru, Chennai, Kolkata, etc.).")
+              ),
+              actionButton("quick_load_live_api_btn", "Fetch Live Climate API Data", class = "btn btn-cw-primary btn-sm w-100", style = "font-weight: 700;")
+            ),
             div(
               class = "cw-preset-card",
               div(
@@ -514,8 +600,8 @@ server <- function(input, output, session) {
             onclick = "setActiveTab('upload')",
             "📁 Go to Upload Dataset"
           )
-        )
       )
+        )
     }
 
     # 3. SUMMARY VIEW (Matches Reference: 4 Solid Vibrant Colored KPI Blocks & Stats Table)
@@ -677,7 +763,7 @@ server <- function(input, output, session) {
             div(
               class = "cw-card-header",
               div(
-                tags$h3(class = "cw-section-heading", "🔍 Anomaly Detective: Daily Observation Investigator"),
+                tags$h3(class = "cw-section-heading", ""),
                 tags$div(class = "cw-section-subheading", "Inspect daily observations, rainfall concentration shares, and test non-destructive sensitivity checks.")
               )
             ),
@@ -686,7 +772,7 @@ server <- function(input, output, session) {
               div(class = "col-md-3", selectInput("detective_loc_select", "Location", choices = active_location_choices())),
               div(class = "col-md-3", numericInput("detective_year_select", "Year", value = max(yrs), min = min(yrs), max = max(yrs))),
               div(class = "col-md-3", selectInput("detective_month_select", "Month", choices = setNames(1:12, month.name), selected = 7)),
-              div(class = "col-md-3", selectInput("detective_var_select", "Weather Variable", choices = c("Total Rainfall (mm)" = "precipitation_mm", "Mean Temperature (°C)" = "temperature_c"), selected = "precipitation_mm"))
+              div(class = "col-md-3", selectInput("detective_var_select", "Weather Variable", choices = c("Total Rainfall (mm)" = "precipitation_mm", "Mean Temperature (&deg;C)" = "temperature_c"), selected = "precipitation_mm"))
             ),
             uiOutput("detective_monthly_overview_card"),
             div(
@@ -809,8 +895,8 @@ server <- function(input, output, session) {
             hr(style = "margin: 20px 0; border-color: var(--cw-border);"),
             div(
               class = "row g-3 align-items-end mb-3",
-              div(class = "col-md-4", selectInput("rel_x_var", "X-Axis Variable", choices = c("Mean Temperature (°C)" = "temperature_c", "Total Rainfall (mm)" = "precipitation_mm", "Relative Humidity (%)" = "humidity_pct"), selected = "temperature_c")),
-              div(class = "col-md-4", selectInput("rel_y_var", "Y-Axis Variable", choices = c("Mean Temperature (°C)" = "temperature_c", "Total Rainfall (mm)" = "precipitation_mm", "Relative Humidity (%)" = "humidity_pct"), selected = "precipitation_mm")),
+              div(class = "col-md-4", selectInput("rel_x_var", "X-Axis Variable", choices = c("Mean Temperature (&deg;C)" = "temperature_c", "Total Rainfall (mm)" = "precipitation_mm", "Relative Humidity (%)" = "humidity_pct"), selected = "temperature_c")),
+              div(class = "col-md-4", selectInput("rel_y_var", "Y-Axis Variable", choices = c("Mean Temperature (&deg;C)" = "temperature_c", "Total Rainfall (mm)" = "precipitation_mm", "Relative Humidity (%)" = "humidity_pct"), selected = "precipitation_mm")),
               div(class = "col-md-4", textOutput("rel_regression_stat_text"))
             ),
             plotlyOutput("rel_scatter_plotly", height = "360px")
@@ -898,7 +984,7 @@ server <- function(input, output, session) {
       )
     }
 
-    t_df <- if ("mean_temperature_c" %in% names(m_df)) calc_stats(m_df$mean_temperature_c, "Temperature (°C)") else NULL
+    t_df <- if ("mean_temperature_c" %in% names(m_df)) calc_stats(m_df$mean_temperature_c, "Temperature (&deg;C)") else NULL
     p_df <- if ("total_precipitation_mm" %in% names(m_df)) calc_stats(m_df$total_precipitation_mm, "Total Rainfall (mm)") else NULL
     h_df <- if ("mean_humidity_pct" %in% names(m_df)) calc_stats(m_df$mean_humidity_pct, "Relative Humidity (%)") else NULL
 
@@ -919,7 +1005,7 @@ server <- function(input, output, session) {
 
     var_col <- input$trends_var_select
     var_label <- switch(var_col,
-      "mean_temperature_c" = "Mean Temperature (°C)",
+      "mean_temperature_c" = "Mean Temperature (&deg;C)",
       "total_precipitation_mm" = "Total Rainfall (mm)",
       "mean_humidity_pct" = "Relative Humidity (%)",
       var_col
@@ -1070,7 +1156,7 @@ server <- function(input, output, session) {
       `Rain (mm)` = flagged$precipitation_mm,
       `Rain Deviation` = flagged$precip_deviation_mm,
       `Rain Flag` = flagged$precip_anomaly_flag,
-      `Temp (°C)` = flagged$temperature_c,
+      `Temp (&deg;C)` = flagged$temperature_c,
       `Temp Z-Score` = flagged$temp_z_score,
       `Temp Severity` = flagged$temp_severity,
       Action = sprintf('<button class="btn btn-sm btn-cw-primary" onclick="Shiny.setInputValue(\'investigate_anomaly\', \'%s_%04d_%02d\', {priority: \'event\'})">Investigate</button>',
@@ -1200,7 +1286,7 @@ server <- function(input, output, session) {
 
     res <- generate_weather_pair_data(daily_df, input$rel_loc_select, input$rel_x_var, input$rel_y_var)
     if (!is.null(res) && res$status == "SUCCESS") {
-      sprintf("N = %d obs | Pearson r = %.3f (R² = %.3f) | Slope: %.4f", res$n, res$r, res$r_squared, res$slope)
+      sprintf("N = %d obs | Pearson r = %.3f (R^2 = %.3f) | Slope: %.4f", res$n, res$r, res$r_squared, res$slope)
     } else {
       "Insufficient overlapping observations for bivariate regression."
     }
@@ -1302,7 +1388,7 @@ server <- function(input, output, session) {
       column(3,
         div(class = "cw-kpi-block cw-kpi-blue p-3",
           div(class = "cw-kpi-block-title", "Current Temp"),
-          div(class = "cw-kpi-block-num", sprintf("%.1f°C", temp_val)),
+          div(class = "cw-kpi-block-num", HTML(HTML(sprintf("%.1f&deg;C", temp_val)))),
           div(class = "cw-kpi-block-desc", cond_val)
         )
       ),
@@ -1346,8 +1432,8 @@ server <- function(input, output, session) {
         column(12 / min(7, nrow(daily)),
           div(style = "background: var(--cw-bg); border: 1px solid var(--cw-border); border-radius: var(--cw-radius-md); padding: 10px; text-align: center;",
             div(style = "font-size: 0.76rem; font-weight: 700; color: var(--cw-text-secondary);", format(as.Date(row$date), "%a %d")),
-            div(style = "font-family: 'Outfit'; font-weight: 700; font-size: 1.05rem; margin: 4px 0;", sprintf("%.0f°", row[[t_max_col]])),
-            div(style = "font-size: 0.72rem; color: var(--cw-text-muted);", sprintf("%.0f° low", row[[t_min_col]])),
+            div(style = "font-family: 'Outfit'; font-weight: 700; font-size: 1.05rem; margin: 4px 0;", HTML(sprintf("%.0f&deg;", row[[t_max_col]]))),
+            div(style = "font-size: 0.72rem; color: var(--cw-text-muted);", HTML(sprintf("%.0f&deg; low", row[[t_min_col]]))),
             div(style = "font-size: 0.7rem; color: #0284C7; font-weight: 600; margin-top: 4px;", sprintf("%.1fmm", row[[p_col]]))
           )
         )
@@ -1367,7 +1453,7 @@ server <- function(input, output, session) {
     p <- ggplot(h_sub, aes(x = time, y = .data[[t_col]])) +
       geom_line(color = "#0284C7", size = 1.0) +
       geom_point(color = "#0D9488", size = 1.5) +
-      labs(x = "Hour (Next 48 Hours)", y = "Temperature (°C)", title = "48-Hour Hourly Temperature Trajectory") +
+      labs(x = "Hour (Next 48 Hours)", y = "Temperature (&deg;C)", title = "48-Hour Hourly Temperature Trajectory") +
       theme_minimal(base_family = "Plus Jakarta Sans")
 
     style_plotly_chart(p, is_dark = is_dark_mode())
@@ -1391,6 +1477,263 @@ server <- function(input, output, session) {
         p(style = "font-size: 0.82rem; margin: 4px 0 0 0;", if (!is.null(a$desc)) a$desc else a$instruction)
       )
     })
+  })
+
+  # -----------------------------------------------------------------
+  # AUTO-LOCATION BOTTOM-RIGHT WEATHER WIDGET & CLEAN POPUP
+  # -----------------------------------------------------------------
+  widget_popup_open_rv <- reactiveVal(FALSE)
+  widget_weather_rv <- reactiveVal(NULL)
+  has_auto_located_rv <- reactiveVal(FALSE)
+
+  # Geolocation callback from browser
+  observeEvent(input$client_geo_coords, {
+    geo <- input$client_geo_coords
+    req(geo)
+    has_auto_located_rv(TRUE)
+
+    if (identical(geo$status, "success") && !is.null(geo$lat) && !is.null(geo$lon)) {
+      near_info <- get_nearest_location_info(geo$lat, geo$lon, std_locations_df)
+      w_res <- fetch_live_weather(geo$lat, geo$lon, near_info$name)
+      widget_weather_rv(list(
+        data = w_res,
+        display_name = sprintf("%s (Your Location)", near_info$name),
+        selected_id = near_info$id,
+        lat = geo$lat,
+        lon = geo$lon
+      ))
+      widget_popup_open_rv(TRUE)
+    } else {
+      # Geolocation denied, error, or not supported
+      if (is.null(widget_weather_rv())) {
+        mumbai_row <- std_locations_df[std_locations_df$location_id == "mumbai", ]
+        lat <- if (nrow(mumbai_row) > 0) mumbai_row$latitude[1] else 19.0760
+        lon <- if (nrow(mumbai_row) > 0) mumbai_row$longitude[1] else 72.8777
+        w_res <- fetch_live_weather(lat, lon, "Mumbai")
+        widget_weather_rv(list(
+          data = w_res,
+          display_name = "Mumbai",
+          selected_id = "mumbai",
+          lat = lat,
+          lon = lon
+        ))
+        widget_popup_open_rv(TRUE)
+      }
+    }
+  })
+
+  # Toggle popup when clicking bottom-right icon
+  observeEvent(input$weather_fab_click, {
+    if (is.null(widget_weather_rv())) {
+      mumbai_row <- std_locations_df[std_locations_df$location_id == "mumbai", ]
+      lat <- if (nrow(mumbai_row) > 0) mumbai_row$latitude[1] else 19.0760
+      lon <- if (nrow(mumbai_row) > 0) mumbai_row$longitude[1] else 72.8777
+      w_res <- fetch_live_weather(lat, lon, "Mumbai")
+      widget_weather_rv(list(
+        data = w_res,
+        display_name = "Mumbai",
+        selected_id = "mumbai",
+        lat = lat,
+        lon = lon
+      ))
+    }
+    widget_popup_open_rv(!widget_popup_open_rv())
+  })
+
+  # Close popup handlers
+  observeEvent(input$widget_popup_close, {
+    widget_popup_open_rv(FALSE)
+  })
+  observeEvent(input$widget_close_btn, {
+    widget_popup_open_rv(FALSE)
+  })
+
+  # City selection in popup
+  observeEvent(input$widget_city_select, {
+    req(input$widget_city_select)
+    curr_w <- widget_weather_rv()
+    if (!is.null(curr_w) && identical(curr_w$selected_id, input$widget_city_select)) {
+      return()
+    }
+    locs <- std_locations_df
+    m <- locs[locs$location_id == input$widget_city_select, ]
+    if (nrow(m) > 0) {
+      w_res <- fetch_live_weather(m$latitude[1], m$longitude[1], m$location_name[1])
+      widget_weather_rv(list(
+        data = w_res,
+        display_name = m$location_name[1],
+        selected_id = m$location_id[1],
+        lat = m$latitude[1],
+        lon = m$longitude[1]
+      ))
+    }
+  }, ignoreInit = TRUE)
+
+  # Explore full details button: navigate to Live Weather tab
+  observeEvent(input$widget_explore_details_btn, {
+    widget_popup_open_rv(FALSE)
+    w_info <- widget_weather_rv()
+    if (!is.null(w_info) && !is.null(w_info$selected_id)) {
+      updateSelectInput(session, "live_location_select", selected = w_info$selected_id)
+    }
+    active_tab_rv("live")
+    active_workspace_rv("live")
+    session$sendCustomMessage("set_active_tab_pill", "live")
+  })
+
+  # Render Bottom-Right Clean Weather Popup Card
+  output$weather_widget_popup_ui <- renderUI({
+    if (!isTRUE(widget_popup_open_rv())) return(NULL)
+
+    w_info <- widget_weather_rv()
+    if (is.null(w_info)) {
+      return(
+        div(
+          class = "cw-weather-popup-card",
+          div(
+            class = "cw-weather-popup-header",
+            div(class = "cw-weather-popup-location", " Fetching Current Weather..."),
+            tags$button(
+              class = "cw-weather-popup-close",
+              onclick = "Shiny.setInputValue('widget_popup_close', Math.random(), {priority: 'event'});",
+              HTML("&times;")
+            )
+          ),
+          div(
+            class = "cw-weather-popup-body text-center py-4",
+            div(class = "spinner-border text-primary mb-2", role = "status"),
+            p(style = "color: var(--cw-text-secondary); font-size: 0.85rem; margin: 0;", "Fetching live conditions...")
+          )
+        )
+      )
+    }
+
+    w_data <- w_info$data
+    curr <- if (!is.null(w_data$current)) w_data$current else list()
+    temp_val <- if (!is.null(curr$temperature)) curr$temperature else if (!is.null(curr$temperature_c)) curr$temperature_c else 28.0
+    app_temp <- if (!is.null(curr$apparent_temperature)) curr$apparent_temperature else temp_val
+    hum_val <- if (!is.null(curr$relative_humidity)) curr$relative_humidity else 65
+    cond_code <- if (!is.null(curr$condition_code)) curr$condition_code else 1
+    cond_name <- if (!is.null(curr$condition)) curr$condition else "Mainly Clear"
+    weather_icon <- get_weather_emoji(cond_code)
+
+    # Chance of rain today from daily forecast
+    rain_prob <- if (!is.null(w_data$daily) && nrow(w_data$daily) > 0 && !is.na(w_data$daily$precip_probability[1])) {
+      sprintf("%d%%", round(w_data$daily$precip_probability[1]))
+    } else if (!is.null(curr$precipitation) && curr$precipitation > 0) {
+      sprintf("%.1f mm", curr$precipitation)
+    } else {
+      "0%"
+    }
+
+    # Curate city choices: Popular metro cities at the top, then all alphabetical stations
+    locs <- std_locations_df
+    top_cities <- c("mumbai", "delhi", "bengaluru", "chennai", "kolkata", "hyderabad", "pune", "ahmedabad", "jaipur", "lucknow", "chandigarh")
+    top_df <- locs[locs$location_id %in% top_cities, ]
+    top_df <- top_df[order(match(top_df$location_id, top_cities)), ]
+    other_df <- locs[!locs$location_id %in% top_cities, ]
+    other_df <- other_df[order(other_df$location_name), ]
+
+    city_choices <- list(
+      "Major Metros" = setNames(top_df$location_id, top_df$location_name),
+      "All Indian Stations" = setNames(other_df$location_id, other_df$location_name)
+    )
+
+    div(
+      class = "cw-weather-popup-card",
+      # Header
+      div(
+        class = "cw-weather-popup-header",
+        div(
+          class = "cw-weather-popup-location",
+          tags$span(style = "color: var(--cw-primary); font-size: 1.05rem;", ""),
+          tags$span(w_info$display_name)
+        ),
+        tags$button(
+          class = "cw-weather-popup-close",
+          onclick = "Shiny.setInputValue('widget_popup_close', Math.random(), {priority: 'event'});",
+          title = "Close popup",
+          HTML("&times;")
+        )
+      ),
+
+      # Body
+      div(
+        class = "cw-weather-popup-body",
+        # Main temp & weather condition
+        div(
+          class = "cw-weather-popup-main",
+          div(
+            class = "cw-weather-popup-temp-group",
+            div(class = "cw-weather-popup-temp", HTML(HTML(sprintf("%.1f&deg;C", temp_val)))),
+            div(class = "cw-weather-popup-condition", cond_name)
+          ),
+          div(class = "cw-weather-popup-icon", weather_icon)
+        ),
+
+        # 3 Key metrics: Feels like, Humidity, Chance of rain
+        div(
+          class = "cw-weather-popup-metrics",
+          div(
+            class = "cw-weather-metric-item",
+            div(class = "cw-weather-metric-label", "Feels Like"),
+            div(class = "cw-weather-metric-val", HTML(sprintf("%.1f&deg;C", app_temp)))
+          ),
+          div(
+            class = "cw-weather-metric-item",
+            div(class = "cw-weather-metric-label", "Humidity"),
+            div(class = "cw-weather-metric-val", sprintf("%d%%", round(hum_val)))
+          ),
+          div(
+            class = "cw-weather-metric-item",
+            div(class = "cw-weather-metric-label", "Rain Today"),
+            div(class = "cw-weather-metric-val", rain_prob)
+          )
+        ),
+
+        # Option to look at other cities
+        div(
+          class = "cw-weather-city-select-box",
+          tags$label("Look at another city:"),
+          div(
+            style = "display: flex; gap: 6px; align-items: center;",
+            div(
+              style = "flex: 1;",
+              selectInput(
+                "widget_city_select",
+                label = NULL,
+                choices = city_choices,
+                selected = w_info$selected_id,
+                width = "100%"
+              )
+            ),
+            tags$button(
+              id = "widget_gps_retry_btn",
+              class = "btn btn-sm btn-outline-secondary",
+              onclick = "requestUserGeolocation();",
+              title = "Detect My Location (GPS)",
+              style = "padding: 5px 9px; border-radius: var(--cw-radius-md); font-size: 0.9rem; height: 38px; line-height: 1;",
+              HTML("")
+            )
+          )
+        )
+      ),
+
+      # Footer
+      div(
+        class = "cw-weather-popup-footer",
+        actionButton(
+          "widget_explore_details_btn",
+          HTML("Explore Full Details &rarr;"),
+          class = "cw-weather-btn-explore"
+        ),
+        actionButton(
+          "widget_close_btn",
+          "Close",
+          class = "cw-weather-btn-close"
+        )
+      )
+    )
   })
 
   # -----------------------------------------------------------------
@@ -1482,10 +1825,10 @@ server <- function(input, output, session) {
     if (is.null(res)) return(NULL)
 
     cards <- list(
-      list(title = "Agriculture & Crops", item = res$agriculture, icon = "🌾"),
-      list(title = "Public Health", item = res$health, icon = "🏥"),
-      list(title = "Civic Infrastructure", item = res$infrastructure, icon = "🏗️"),
-      list(title = "Water Security", item = res$water_security, icon = "💧")
+      list(title = "Agriculture & Crops", item = res$agriculture, icon = "Crops"),
+      list(title = "Public Health", item = res$health, icon = "Health"),
+      list(title = "Civic Infrastructure", item = res$infrastructure, icon = "Infrastructure"),
+      list(title = "Water Security", item = res$water_security, icon = "Water")
     )
 
     fluidRow(
@@ -1511,7 +1854,7 @@ server <- function(input, output, session) {
             ),
             div(
               style = "background: var(--cw-bg); border-radius: var(--cw-radius-sm); padding: 8px 12px; font-size: 0.78rem; color: var(--cw-text-secondary);",
-              tags$strong("Primary Drivers: "), paste(item$drivers, collapse = " • ")
+              tags$strong("Primary Drivers: "), paste(item$drivers, collapse = " &bull; ")
             )
           )
         )
@@ -1538,14 +1881,14 @@ server <- function(input, output, session) {
       column(6,
         div(class = "cw-card p-3",
           tags$h6(style = "font-weight: 700;", "Infrastructure What-If:"),
-          p(style = "font-size: 0.82rem; margin-bottom: 4px;", sprintf("Base concern: %s ➔ What-If concern: %s", base$infrastructure$concern_level, wif$infrastructure$concern_level)),
+          p(style = "font-size: 0.82rem; margin-bottom: 4px;", sprintf("Base concern: %s -> What-If concern: %s", base$infrastructure$concern_level, wif$infrastructure$concern_level)),
           div(style = "font-size: 0.78rem; color: var(--cw-text-secondary);", wif$infrastructure$narrative)
         )
       ),
       column(6,
         div(class = "cw-card p-3",
           tags$h6(style = "font-weight: 700;", "Public Health What-If:"),
-          p(style = "font-size: 0.82rem; margin-bottom: 4px;", sprintf("Base concern: %s ➔ What-If concern: %s", base$health$concern_level, wif$health$concern_level)),
+          p(style = "font-size: 0.82rem; margin-bottom: 4px;", sprintf("Base concern: %s -> What-If concern: %s", base$health$concern_level, wif$health$concern_level)),
           div(style = "font-size: 0.78rem; color: var(--cw-text-secondary);", wif$health$narrative)
         )
       )
@@ -1632,7 +1975,7 @@ server <- function(input, output, session) {
       p <- ggplot(d_df, aes(x = date, y = temperature_c)) +
         geom_line(color = "#DC2626", size = 1.0, na.rm = TRUE) +
         geom_point(color = "#DC2626", size = 2, na.rm = TRUE) +
-        labs(x = "Day of Month", y = "Daily Temperature (°C)", title = "Daily Temperature (°C)") +
+        labs(x = "Day of Month", y = "Daily Temperature (&deg;C)", title = "Daily Temperature (&deg;C)") +
         theme_minimal(base_family = "Plus Jakarta Sans")
       if (!is.na(b_mean)) {
         p <- p + geom_hline(yintercept = b_mean, linetype = "dashed", color = "#0284C7")
@@ -1660,7 +2003,7 @@ server <- function(input, output, session) {
     top_dates <- head(valid_d[order(valid_d[[input$detective_var_select]], decreasing = TRUE), ], 5)
     choices_vec <- setNames(
       as.character(top_dates$date),
-      sprintf("%s (%.1f %s)", format(top_dates$date, "%d %b"), top_dates[[input$detective_var_select]], if (input$detective_var_select == "precipitation_mm") "mm" else "°C")
+      sprintf("%s (%.1f %s)", format(top_dates$date, "%d %b"), top_dates[[input$detective_var_select]], if (input$detective_var_select == "precipitation_mm") "mm" else "&deg;C")
     )
 
     checkboxGroupInput("detective_exclude_days", "Select top observed day(s) to omit:", choices = choices_vec)
@@ -1686,7 +2029,7 @@ server <- function(input, output, session) {
       style = "background: var(--cw-bg); border: 1px solid var(--cw-border); border-radius: var(--cw-radius-md); padding: 12px; margin-top: 10px;",
       div(style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;",
         tags$strong("Exploratory Recalculation:"),
-        tags$span(class = paste("cw-badge", badge_class), if (sens$is_eligible) "Eligible (≥90%)" else "Ineligible (<90%)")
+        tags$span(class = paste("cw-badge", badge_class), if (sens$is_eligible) "Eligible (&ge;90%)" else "Ineligible (<90%)")
       ),
       p(style = "font-size: 0.82rem; margin-bottom: 4px;",
         sprintf("Exploratory result: %.1f %s (Difference: %+.1f %s)", sens$exploratory_value, sens$unit, sens$difference, sens$unit)
@@ -1767,7 +2110,7 @@ server <- function(input, output, session) {
         style = "display: flex; align-items: center; justify-content: space-between;",
         tags$div(
           style = "overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px;",
-          tags$span(style = "font-weight: 700; color: #0284C7; font-size: 0.95rem;", sprintf("📁 %s", f$name)),
+          tags$span(style = "font-weight: 700; color: #0284C7; font-size: 0.95rem;", sprintf("%s", f$name)),
           tags$span(style = "color: var(--cw-text-secondary); font-size: 0.8rem; margin-left: 6px;", sprintf("(%.1f KB)", f$size / 1024))
         ),
         tags$span(class = "cw-badge cw-badge-normal", "Analyzed")
@@ -1801,6 +2144,54 @@ server <- function(input, output, session) {
   })
 
   # 1-Click Quick Preset: CDSP Rainfall
+  # 1-Click Real-Time Open-Meteo Climate API Stream
+  observeEvent(input$quick_load_live_api_btn, {
+    withProgress(message = "Fetching live Indian climate observations...", value = 0.3, {
+      incProgress(0.2, detail = "Querying Open-Meteo real-time API...")
+      live_df <- fetch_live_indian_climate_dataset(past_days = 90)
+      
+      if (is.null(live_df) || nrow(live_df) == 0) {
+        showNotification("Unable to reach Open-Meteo API. Please check internet connection.", type = "error")
+        return()
+      }
+      
+      incProgress(0.3, detail = "Validating and caching live stream...")
+      temp_live_csv <- file.path(tempdir(), "open_meteo_live_india_climate.csv")
+      write.csv(live_df, temp_live_csv, row.names = FALSE)
+      
+      col_map <- list(
+        col_date = "date",
+        col_location_id = "station_code",
+        col_location_name = "city",
+        col_temperature = "mean_temp_c",
+        col_precipitation = "total_rain_mm",
+        col_humidity = "humidity_percent",
+        col_latitude = "lat",
+        col_longitude = "lon"
+      )
+      
+      val_res <- validate_and_prepare_dataset(
+        file_path = temp_live_csv,
+        dataset_name = "Live Real-Time Indian Climate (Open-Meteo API)",
+        source_reference = "Open-Meteo Real-Time Weather API (Live Observations)",
+        column_mapping = col_map,
+        unit_mapping = list(temp_unit = "C", precip_unit = "mm", humidity_unit = "pct"),
+        location_coords_source = "uploaded_file",
+        auto_resolve_duplicates = TRUE
+      )
+      
+      if (isTRUE(val_res$is_valid)) {
+        pkg <- activate_uploaded_dataset(val_res, raw_file_path = temp_live_csv)
+        active_dataset_rv(pkg)
+        active_tab_rv("summary")
+        session$sendCustomMessage("set_active_tab_pill", "summary")
+        showNotification("Real-time Indian climate API stream activated!", type = "message")
+      } else {
+        showNotification("Failed to activate live API stream.", type = "error")
+      }
+    })
+  })
+
   observeEvent(input$quick_load_cdsp_btn, {
     cdsp_path <- if (file.exists("data/raw/CDSP_Rainfall_212_Stations_1969_2020.csv")) {
       "data/raw/CDSP_Rainfall_212_Stations_1969_2020.csv"
